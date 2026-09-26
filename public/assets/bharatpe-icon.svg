@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <filter id="soft-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.08" />
+    </filter>
+  </defs>
+  
+  <!-- Outer soft rounded square matching user image -->
+  <rect x="10" y="10" width="180" height="180" rx="42" fill="#ffffff" stroke="#eef2f6" stroke-width="2" filter="url(#soft-shadow)" />
+
+  <!-- Cyan Circular Emblem Ring -->
+  <circle cx="100" cy="82" r="42" fill="none" stroke="#00b4d8" stroke-width="10" />
+
+  <!-- Top Orange/Saffron Slanted Bar -->
+  <polygon points="80,72 118,63 118,72 80,81" fill="#f46b45" />
+
+  <!-- Bottom Teal/Green Slanted Bar -->
+  <polygon points="80,90 118,81 118,90 80,99" fill="#00796b" />
+
+  <!-- BharatPe Logotype -->
+  <g font-family="system-ui, -apple-system, 'Inter', 'Segoe UI', sans-serif" font-weight="900" font-size="25" text-anchor="middle">
+    <text x="74" y="152" fill="#000000" letter-spacing="-0.5">Bharat</text>
+    <text x="127" y="152" fill="#00b4d8" letter-spacing="-0.5">Pe</text>
+  </g>
+</svg>

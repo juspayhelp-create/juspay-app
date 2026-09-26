@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Deep purple squircle background -->
+  <rect x="0" y="0" width="200" height="200" rx="48" fill="#35064e" />
+
+  <!-- Bright vibrant green Navi 'n' + arrow icon -->
+  <!-- Upper right growth arrow -->
+  <path
+    d="M 95,53 H 148 V 106 H 127 V 74 H 95 Z"
+    fill="#1dd680"
+  />
+
+  <!-- Lower left 'n' shape with rounded shoulder and base -->
+  <path
+    d="M 52,85 H 93 C 98,85 106,89 111,94 L 116,99 C 120,103 122,109 122,116 V 147 C 122,151 119,154 115,154 H 100 C 97,154 95,152 95,149 V 106 H 74 V 149 C 74,152 72,154 69,154 H 55 C 53,154 52,152 52,149 Z"
+    fill="#1dd680"
+  />
+</svg>
