@@ -77,6 +77,28 @@ app.get(['/manifest.json', '/manifest.webmanifest'], (_req, res) => {
   res.status(404).send('Manifest not found');
 });
 
+// Explicit Digital Asset Links Hosting (for Android TWA - Removes Browser URL Bar)
+app.use('/.well-known', express.static(path.join(publicAssetsDir, '.well-known'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.json')) {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+    }
+  }
+}));
+
+app.get(['/.well-known/assetlinks.json', '/assetlinks.json'], (_req, res) => {
+  const assetLinksPath = path.join(publicAssetsDir, '.well-known', 'assetlinks.json');
+  if (fs.existsSync(assetLinksPath)) {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.sendFile(assetLinksPath);
+  }
+  res.status(404).json({ error: 'assetlinks.json not found' });
+});
+
 app.get(['/sw.js', '/serviceworker.js'], (_req, res) => {
   const swPath = path.join(publicAssetsDir, 'sw.js');
   if (fs.existsSync(swPath)) {
