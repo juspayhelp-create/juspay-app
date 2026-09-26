@@ -420,3 +420,50 @@ export interface CheerPopupData {
   durationMs?: number;
 }
 
+export interface TeamMemberData {
+  id: string;
+  email: string;
+  username: string;
+  referral_code?: string;
+  referred_by?: string;
+  deposit_balance: number;
+  total_deposit: number;
+  total_deposit_usdt: number;
+  vault_balance?: number;
+  commission_earned_inr: number;
+  commission_earned_usdt: number;
+  is_active: boolean;
+  active_status: string;
+  tier?: string;
+  created_at: string;
+}
+
+export interface TeamDataResponse {
+  success: boolean;
+  referral_code: string;
+  total_team_deposit_inr: number;
+  total_team_deposit_usdt: number;
+  team_deposit_inr: number;
+  team_deposit: number;
+  total_team_deposit: number;
+  level1_deposit_inr: number;
+  level2_deposit_inr: number;
+  level3_deposit_inr: number;
+  total_ref_earning_usdt: number;
+  total_ref_earning_inr: number;
+  level_a_earning_inr: number;
+  level_b_earning_inr: number;
+  level_c_earning_inr: number;
+  l1_count: number;
+  l2_count: number;
+  l3_count: number;
+  total_count: number;
+  total_members_count: number;
+  l1_active_count: number;
+  level1: TeamMemberData[];
+  level2: TeamMemberData[];
+  level3: TeamMemberData[];
+  all_team_members?: TeamMemberData[];
+  commissions: any[];
+}
+

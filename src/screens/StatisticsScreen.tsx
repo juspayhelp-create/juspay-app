@@ -21,11 +21,26 @@ export const StatisticsScreen: React.FC = () => {
     setActiveScreen,
     claimableOrders,
     transactions,
-    isOrderClaimedByUser
+    isOrderClaimedByUser,
+    teamData,
+    fetchTeamData
   } = useApp();
+
+  useEffect(() => {
+    fetchTeamData();
+  }, [fetchTeamData]);
 
   // Calculate user's Level 1, Level 2, and Level 3 referrals count
   const referralCounts = useMemo(() => {
+    if (teamData) {
+      return {
+        level1: teamData.l1_count || 0,
+        level2: teamData.l2_count || 0,
+        level3: teamData.l3_count || 0,
+        total: teamData.total_count || 0
+      };
+    }
+
     if (!currentUser || !allUsers || !Array.isArray(allUsers)) {
       return { level1: 0, level2: 0, level3: 0, total: 0 };
     }

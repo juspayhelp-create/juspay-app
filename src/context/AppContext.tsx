@@ -19,6 +19,7 @@ import {
   AdminAuthSession,
   AdminLoginResult,
   CheerPopupData,
+  TeamDataResponse,
 } from '../types';
 import { getDeviceFingerprint } from '../utils/fingerprint';
 
@@ -28,6 +29,8 @@ interface AppContextType {
   setIsAuthenticated: (auth: boolean) => void;
   isSessionLoading: boolean;
   allUsers: User[];
+  teamData: TeamDataResponse | null;
+  fetchTeamData: () => Promise<void>;
   transactions: Transaction[];
   tasks: Task[];
   claimableOrders: ClaimableOrder[];
@@ -1407,6 +1410,7 @@ const getEffectiveAdmin = (userList: User[]): User => {
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // Persistence states - Auto-initializes and re-seeds default test accounts & starting balances when storage is empty
   const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [teamData, setTeamData] = useState<TeamDataResponse | null>(null);
   const [isLoadingUsers, setIsLoadingUsers] = useState<boolean>(true);
 
   // Loading state preventing flash of unverified or stale cached session state
@@ -2218,6 +2222,75 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, []);
 
+  const fetchTeamData = useCallback(async () => {
+    let storedToken = localStorage.getItem('juspay_auth_token') || localStorage.getItem('auth_token');
+    const savedUid = localStorage.getItem('juspay_active_uid');
+    if (!storedToken && (!savedUid || savedUid === 'guest')) {
+      setTeamData(null);
+      return;
+    }
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache'
+    };
+    if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
+    if (savedUid && savedUid !== 'guest') headers['x-user-id'] = savedUid;
+
+    try {
+      const res = await fetch('/api/team', { headers, cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setTeamData(data);
+          const teamMembers = [...(data.level1 || []), ...(data.level2 || []), ...(data.level3 || [])];
+          if (teamMembers.length > 0) {
+            setAllUsers(prev => {
+              const prevMap = new Map(prev.map(u => [String(u.id), u]));
+              teamMembers.forEach(tm => {
+                const idStr = String(tm.id);
+                const existing = prevMap.get(idStr);
+                const mappedMember: User = {
+                  id: idStr,
+                  username: tm.username || (tm.email ? tm.email.split('@')[0] : `User_${tm.id}`),
+                  email: tm.email,
+                  vault_balance: Number(tm.vault_balance ?? tm.deposit_balance ?? 0),
+                  total_commissions: Number(tm.commission_earned_inr || 0),
+                  available_balance: Number(tm.vault_balance ?? tm.deposit_balance ?? 0),
+                  inr_balance: Number(tm.vault_balance ?? tm.deposit_balance ?? 0),
+                  deposit_balance: Number(tm.deposit_balance ?? tm.total_deposit ?? 0),
+                  withdrawal_balance: 0,
+                  commission_balance: Number(tm.commission_earned_inr || 0),
+                  affiliate_commission_total: Number(tm.commission_earned_inr || 0),
+                  sell_balance: Number(tm.vault_balance ?? tm.deposit_balance ?? 0),
+                  selling_cards: 0,
+                  usdt_selling_cards: 0,
+                  usdt_cards_balance: 0,
+                  referral_code: tm.referral_code || 'JUS7789',
+                  referred_by: tm.referred_by || undefined,
+                  referral_link: `${window.location.origin || 'https://juspay.io'}/?ref=${tm.referral_code || 'JUS7789'}`,
+                  security_pin: '123456',
+                  securityPin: '123456',
+                  role: 'user',
+                  status: (tm.is_active ? 'Active' : 'Active') as any,
+                  avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${tm.email}`,
+                  points: 0,
+                  created_at: tm.created_at ? tm.created_at.slice(0, 10) : new Date().toISOString().slice(0, 10),
+                  signup_cards_claimed: true,
+                };
+                prevMap.set(idStr, { ...(existing || {}), ...mappedMember });
+              });
+              return Array.from(prevMap.values());
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[AppContext] fetchTeamData note:', err);
+    }
+  }, []);
+
   // Self-healing mount check & Neon Postgres backend session synchronization
   useEffect(() => {
     const syncSessionWithNeonPostgres = async () => {
@@ -2359,6 +2432,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             if (u.role === 'admin') {
               fetchUsers();
             }
+            fetchTeamData();
             fetchTasks();
             fetchCashbackOffers();
             fetchClaimedCashbackOrders();
@@ -2379,6 +2453,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       } finally {
         setIsSessionLoading(false);
       }
+      fetchTeamData();
       fetchTasks();
       fetchCashbackOffers();
       fetchClaimedCashbackOrders();
@@ -6237,6 +6312,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         fetchCashbackOffers,
         fetchUsers,
         isLoadingUsers,
+        teamData,
+        fetchTeamData,
         paymentGateways,
         cryptoVaults,
         platformAccount,

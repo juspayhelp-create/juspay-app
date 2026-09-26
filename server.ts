@@ -6087,25 +6087,66 @@ app.get('/api/withdrawals/my', authenticateToken, async (req, res) => {
 });
 
 // -------------------------------------------------------------
-// 2-TIER REFERRAL ENGINE
+// -------------------------------------------------------------
+// 3-TIER REFERRAL & TEAM ENGINE
 // -------------------------------------------------------------
 
-app.get('/api/team', authenticateToken, async (req, res) => {
+app.get(['/api/team', '/api/user/team'], async (req, res) => {
   try {
-    const user = await dbGet('SELECT referral_code, total_ref_earning FROM users WHERE id = ?', [req.user.id]);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found.' });
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    let targetUser: any = null;
+
+    // Check token first
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token && token !== 'null' && token !== 'undefined') {
+      try {
+        const decoded: any = jwt.verify(token, JWT_SECRET);
+        if (decoded?.id && isNumericId(decoded.id)) {
+          targetUser = await dbGet('SELECT * FROM users WHERE id = ?', [Number(decoded.id)]);
+        }
+        if (!targetUser && decoded?.email) {
+          targetUser = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER(?)', [String(decoded.email).trim()]);
+        }
+      } catch (err) {}
     }
 
-    const refCode = user.referral_code || '';
+    // Fallback to x-user-id header or query
+    if (!targetUser) {
+      const headerUid = req.headers['x-user-id'] || req.query.userId || req.query.user_id;
+      if (headerUid && headerUid !== 'guest') {
+        if (isNumericId(headerUid)) {
+          targetUser = await dbGet('SELECT * FROM users WHERE id = ?', [Number(headerUid)]);
+        }
+        if (!targetUser) {
+          targetUser = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER(?) OR LOWER(referral_code) = LOWER(?)', [String(headerUid).trim(), String(headerUid).trim()]);
+        }
+      }
+    }
+
+    if (!targetUser) {
+      return res.status(401).json({ success: false, error: 'Authentication required to view team data.' });
+    }
+
+    const refCode = String(targetUser.referral_code || '').trim();
+    const myIdStr = String(targetUser.id);
+    const myEmail = String(targetUser.email || '').toLowerCase().trim();
 
     // Level 1: Direct referrals
     const level1Users = await dbAll(
-      `SELECT id, email, username, usdt_balance, total_deposit, deposit_balance, created_at, referred_by, upline_code
+      `SELECT id, email, username, usdt_balance, total_deposit, deposit_balance, vault_balance, created_at, referred_by, upline_code, referral_code
        FROM users 
-        WHERE (LOWER(upline_code) = LOWER(?) OR LOWER(referred_by) = LOWER(?)) AND CAST(id AS TEXT) != ? 
-        ORDER BY id DESC`,
-      [refCode, refCode, String(req.user.id)]
+       WHERE (
+         (referral_code IS NOT NULL AND LOWER(upline_code) = LOWER(?))
+         OR (referred_by IS NOT NULL AND LOWER(referred_by) = LOWER(?))
+         OR (referred_by IS NOT NULL AND (referred_by = ? OR LOWER(referred_by) = LOWER(?)))
+         OR (upline_code IS NOT NULL AND (upline_code = ? OR LOWER(upline_code) = LOWER(?)))
+       ) AND CAST(id AS TEXT) != ?
+       ORDER BY id DESC`,
+      [refCode, refCode, myIdStr, myEmail, myIdStr, myEmail, myIdStr]
     );
 
     const level1 = await Promise.all(
@@ -6113,27 +6154,26 @@ app.get('/api/team', authenticateToken, async (req, res) => {
         const depRows = await dbAll(
           `SELECT amount_usdt, amount_inr FROM deposits 
            WHERE (CAST(user_id AS TEXT) = ? OR (LOWER(user_email) = LOWER(?) AND ? != '')) 
-             AND LOWER(status) IN ('approved', 'completed')`,
+             AND LOWER(status) IN ('approved', 'completed', 'successful', 'settled')`,
           [String(u.id), u.email || '', u.email || '']
         );
         const txRows = await dbAll(
           `SELECT amount_usdt, amount_inr FROM transactions 
            WHERE (CAST(user_id AS TEXT) = ? OR (LOWER(user_email) = LOWER(?) AND ? != '')) 
-             AND LOWER(type) = 'deposit' 
-             AND LOWER(status) IN ('approved', 'completed', 'successful')`,
+             AND LOWER(type) IN ('deposit', 'recharge', 'crypto', 'crypto_deposit', 'crypto deposit') 
+             AND LOWER(status) IN ('approved', 'completed', 'successful', 'settled')`,
           [String(u.id), u.email || '', u.email || '']
         );
 
-        const totalInr = Math.max(
-          depRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0),
-          txRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0),
-          Number(u.total_deposit) || 0,
-          Number(u.deposit_balance) || 0
-        );
-        const totalUsdt = Math.max(
+        const depSum = depRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0);
+        const txSum = txRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0);
+        const userDepField = Number(u.deposit_balance ?? u.total_deposit ?? 0);
+        const userVaultField = Number(u.vault_balance ?? 0);
+
+        const totalInr = Math.max(depSum, txSum, userDepField);
+        const totalUsdt = totalInr > 0 ? Number((totalInr / FIXED_RATE).toFixed(2)) : Math.max(
           depRows.reduce((sum, r) => sum + (Number(r.amount_usdt) || 0), 0),
           txRows.reduce((sum, r) => sum + (Number(r.amount_usdt) || 0), 0),
-          (Number(u.total_deposit) || 0) / FIXED_RATE,
           Number(u.usdt_balance) || 0
         );
 
@@ -6143,7 +6183,7 @@ app.get('/api/team', authenticateToken, async (req, res) => {
              AND (CAST(source_user_id AS TEXT) = ? OR (LOWER(source_user_email) = LOWER(?) AND ? != ''))
              AND LOWER(status) IN ('approved', 'completed', 'successful', 'settled')
              AND (LOWER(type) IN ('commission', 'referral', 'referral_l1', 'referral_l2', 'referral_l3', 'level_a', 'level_b', 'level_c') OR LOWER(type) LIKE '%commission%')`,
-          [String(req.user.id), req.user.email || '', req.user.email || '', String(u.id), u.email || '', u.email || '']
+          [String(targetUser.id), targetUser.email || '', targetUser.email || '', String(u.id), u.email || '', u.email || '']
         );
         const commInr = commRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0);
         const commUsdt = commRows.reduce((sum, r) => sum + (Number(r.amount_usdt) || 0), 0);
@@ -6151,56 +6191,71 @@ app.get('/api/team', authenticateToken, async (req, res) => {
         const isActive = totalInr >= 5000 || totalUsdt >= 45.045;
 
         return {
-          id: u.id,
+          id: String(u.id),
           email: u.email,
-          username: u.username || u.email.split('@')[0],
+          username: u.username || (u.email ? u.email.split('@')[0] : `User_${u.id}`),
+          referral_code: u.referral_code,
+          referred_by: u.referred_by || u.upline_code,
           deposit_balance: totalInr,
           total_deposit: totalInr,
           total_deposit_usdt: Number(totalUsdt.toFixed(2)),
+          vault_balance: userVaultField,
           commission_earned_inr: commInr,
           commission_earned_usdt: Number(commUsdt.toFixed(2)),
           is_active: isActive,
           active_status: isActive ? 'Active (≥₹5,000)' : 'Pending Deposit (<₹5,000)',
+          tier: 'Level A',
           created_at: u.created_at
         };
       })
     );
+
+    const l1Codes = new Set(level1.map(m => String(m.referral_code || '').toLowerCase()).filter(Boolean));
+    const l1Ids = new Set(level1.map(m => String(m.id).toLowerCase()));
+    const l1Emails = new Set(level1.map(m => String(m.email || '').toLowerCase()).filter(Boolean));
 
     // Level 2: Indirect referrals
     const level2Users = await dbAll(
-      `SELECT id, email, username, usdt_balance, total_deposit, deposit_balance, created_at, referred_by, upline_code, upline_l2_code
+      `SELECT id, email, username, usdt_balance, total_deposit, deposit_balance, vault_balance, created_at, referred_by, upline_code, upline_l2_code, referral_code
        FROM users 
-       WHERE LOWER(upline_l2_code) = LOWER(?) AND CAST(id AS TEXT) != ? 
+       WHERE CAST(id AS TEXT) != ?
        ORDER BY id DESC`,
-      [refCode, String(req.user.id)]
+      [myIdStr]
     );
 
+    const filteredL2Users = level2Users.filter(u => {
+      if (l1Ids.has(String(u.id).toLowerCase()) || l1Emails.has(String(u.email || '').toLowerCase())) return false;
+      const uplineL2 = String(u.upline_l2_code || '').toLowerCase().trim();
+      if (refCode && uplineL2 === refCode.toLowerCase()) return true;
+      const refBy = String(u.referred_by || u.upline_code || '').toLowerCase().trim();
+      return refBy && (l1Codes.has(refBy) || l1Ids.has(refBy) || l1Emails.has(refBy));
+    });
+
     const level2 = await Promise.all(
-      level2Users.map(async (u) => {
+      filteredL2Users.map(async (u) => {
         const depRows = await dbAll(
           `SELECT amount_usdt, amount_inr FROM deposits 
            WHERE (CAST(user_id AS TEXT) = ? OR (LOWER(user_email) = LOWER(?) AND ? != '')) 
-             AND LOWER(status) IN ('approved', 'completed')`,
+             AND LOWER(status) IN ('approved', 'completed', 'successful', 'settled')`,
           [String(u.id), u.email || '', u.email || '']
         );
         const txRows = await dbAll(
           `SELECT amount_usdt, amount_inr FROM transactions 
            WHERE (CAST(user_id AS TEXT) = ? OR (LOWER(user_email) = LOWER(?) AND ? != '')) 
-             AND LOWER(type) = 'deposit' 
-             AND LOWER(status) IN ('approved', 'completed', 'successful')`,
+             AND LOWER(type) IN ('deposit', 'recharge', 'crypto', 'crypto_deposit', 'crypto deposit') 
+             AND LOWER(status) IN ('approved', 'completed', 'successful', 'settled')`,
           [String(u.id), u.email || '', u.email || '']
         );
 
-        const totalInr = Math.max(
-          depRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0),
-          txRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0),
-          Number(u.total_deposit) || 0,
-          Number(u.deposit_balance) || 0
-        );
-        const totalUsdt = Math.max(
+        const depSum = depRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0);
+        const txSum = txRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0);
+        const userDepField = Number(u.deposit_balance ?? u.total_deposit ?? 0);
+        const userVaultField = Number(u.vault_balance ?? 0);
+
+        const totalInr = Math.max(depSum, txSum, userDepField);
+        const totalUsdt = totalInr > 0 ? Number((totalInr / FIXED_RATE).toFixed(2)) : Math.max(
           depRows.reduce((sum, r) => sum + (Number(r.amount_usdt) || 0), 0),
           txRows.reduce((sum, r) => sum + (Number(r.amount_usdt) || 0), 0),
-          (Number(u.total_deposit) || 0) / FIXED_RATE,
           Number(u.usdt_balance) || 0
         );
 
@@ -6210,7 +6265,7 @@ app.get('/api/team', authenticateToken, async (req, res) => {
              AND (CAST(source_user_id AS TEXT) = ? OR (LOWER(source_user_email) = LOWER(?) AND ? != ''))
              AND LOWER(status) IN ('approved', 'completed', 'successful', 'settled')
              AND (LOWER(type) IN ('commission', 'referral', 'referral_l1', 'referral_l2', 'referral_l3') OR LOWER(type) LIKE '%commission%')`,
-          [String(req.user.id), req.user.email || '', req.user.email || '', String(u.id), u.email || '', u.email || '']
+          [String(targetUser.id), targetUser.email || '', targetUser.email || '', String(u.id), u.email || '', u.email || '']
         );
         const commInr = commRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0);
         const commUsdt = commRows.reduce((sum, r) => sum + (Number(r.amount_usdt) || 0), 0);
@@ -6218,56 +6273,72 @@ app.get('/api/team', authenticateToken, async (req, res) => {
         const isActive = totalInr >= 5000 || totalUsdt >= 45.045;
 
         return {
-          id: u.id,
+          id: String(u.id),
           email: u.email,
-          username: u.username || u.email.split('@')[0],
+          username: u.username || (u.email ? u.email.split('@')[0] : `User_${u.id}`),
+          referral_code: u.referral_code,
+          referred_by: u.referred_by || u.upline_code,
           deposit_balance: totalInr,
           total_deposit: totalInr,
           total_deposit_usdt: Number(totalUsdt.toFixed(2)),
+          vault_balance: userVaultField,
           commission_earned_inr: commInr,
           commission_earned_usdt: Number(commUsdt.toFixed(2)),
           is_active: isActive,
           active_status: isActive ? 'Active (≥₹5,000)' : 'Pending Deposit (<₹5,000)',
+          tier: 'Level B',
           created_at: u.created_at
         };
       })
     );
+
+    const l2Codes = new Set(level2.map(m => String(m.referral_code || '').toLowerCase()).filter(Boolean));
+    const l2Ids = new Set(level2.map(m => String(m.id).toLowerCase()));
+    const l2Emails = new Set(level2.map(m => String(m.email || '').toLowerCase()).filter(Boolean));
 
     // Level 3: 3rd-tier referrals
     const level3Users = await dbAll(
-      `SELECT id, email, username, usdt_balance, total_deposit, deposit_balance, created_at, referred_by, upline_code, upline_l2_code, upline_l3_code
+      `SELECT id, email, username, usdt_balance, total_deposit, deposit_balance, vault_balance, created_at, referred_by, upline_code, upline_l2_code, upline_l3_code, referral_code
        FROM users 
-       WHERE LOWER(upline_l3_code) = LOWER(?) AND CAST(id AS TEXT) != ? 
+       WHERE CAST(id AS TEXT) != ?
        ORDER BY id DESC`,
-      [refCode, String(req.user.id)]
+      [myIdStr]
     );
 
+    const filteredL3Users = level3Users.filter(u => {
+      if (l1Ids.has(String(u.id).toLowerCase()) || l1Emails.has(String(u.email || '').toLowerCase())) return false;
+      if (l2Ids.has(String(u.id).toLowerCase()) || l2Emails.has(String(u.email || '').toLowerCase())) return false;
+      const uplineL3 = String(u.upline_l3_code || '').toLowerCase().trim();
+      if (refCode && uplineL3 === refCode.toLowerCase()) return true;
+      const refBy = String(u.referred_by || u.upline_code || '').toLowerCase().trim();
+      return refBy && (l2Codes.has(refBy) || l2Ids.has(refBy) || l2Emails.has(refBy));
+    });
+
     const level3 = await Promise.all(
-      level3Users.map(async (u) => {
+      filteredL3Users.map(async (u) => {
         const depRows = await dbAll(
           `SELECT amount_usdt, amount_inr FROM deposits 
            WHERE (CAST(user_id AS TEXT) = ? OR (LOWER(user_email) = LOWER(?) AND ? != '')) 
-             AND LOWER(status) IN ('approved', 'completed')`,
+             AND LOWER(status) IN ('approved', 'completed', 'successful', 'settled')`,
           [String(u.id), u.email || '', u.email || '']
         );
         const txRows = await dbAll(
           `SELECT amount_usdt, amount_inr FROM transactions 
            WHERE (CAST(user_id AS TEXT) = ? OR (LOWER(user_email) = LOWER(?) AND ? != '')) 
-             AND LOWER(type) = 'deposit' 
-             AND LOWER(status) IN ('approved', 'completed', 'successful')`,
+             AND LOWER(type) IN ('deposit', 'recharge', 'crypto', 'crypto_deposit', 'crypto deposit') 
+             AND LOWER(status) IN ('approved', 'completed', 'successful', 'settled')`,
           [String(u.id), u.email || '', u.email || '']
         );
 
-        const totalInr = Math.max(
-          depRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0),
-          txRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0),
-          Number(u.total_deposit) || 0,
-          Number(u.deposit_balance) || 0
-        );
-        const totalUsdt = Math.max(
+        const depSum = depRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0);
+        const txSum = txRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0);
+        const userDepField = Number(u.deposit_balance ?? u.total_deposit ?? 0);
+        const userVaultField = Number(u.vault_balance ?? 0);
+
+        const totalInr = Math.max(depSum, txSum, userDepField);
+        const totalUsdt = totalInr > 0 ? Number((totalInr / FIXED_RATE).toFixed(2)) : Math.max(
           depRows.reduce((sum, r) => sum + (Number(r.amount_usdt) || 0), 0),
           txRows.reduce((sum, r) => sum + (Number(r.amount_usdt) || 0), 0),
-          (Number(u.total_deposit) || 0) / FIXED_RATE,
           Number(u.usdt_balance) || 0
         );
 
@@ -6277,7 +6348,7 @@ app.get('/api/team', authenticateToken, async (req, res) => {
              AND (CAST(source_user_id AS TEXT) = ? OR (LOWER(source_user_email) = LOWER(?) AND ? != ''))
              AND LOWER(status) IN ('approved', 'completed', 'successful', 'settled')
              AND (LOWER(type) IN ('commission', 'referral', 'referral_l1', 'referral_l2', 'referral_l3') OR LOWER(type) LIKE '%commission%')`,
-          [String(req.user.id), req.user.email || '', req.user.email || '', String(u.id), u.email || '', u.email || '']
+          [String(targetUser.id), targetUser.email || '', targetUser.email || '', String(u.id), u.email || '', u.email || '']
         );
         const commInr = commRows.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0);
         const commUsdt = commRows.reduce((sum, r) => sum + (Number(r.amount_usdt) || 0), 0);
@@ -6285,20 +6356,31 @@ app.get('/api/team', authenticateToken, async (req, res) => {
         const isActive = totalInr >= 5000 || totalUsdt >= 45.045;
 
         return {
-          id: u.id,
+          id: String(u.id),
           email: u.email,
-          username: u.username || u.email.split('@')[0],
+          username: u.username || (u.email ? u.email.split('@')[0] : `User_${u.id}`),
+          referral_code: u.referral_code,
+          referred_by: u.referred_by || u.upline_code,
           deposit_balance: totalInr,
           total_deposit: totalInr,
           total_deposit_usdt: Number(totalUsdt.toFixed(2)),
+          vault_balance: userVaultField,
           commission_earned_inr: commInr,
           commission_earned_usdt: Number(commUsdt.toFixed(2)),
           is_active: isActive,
           active_status: isActive ? 'Active (≥₹5,000)' : 'Pending Deposit (<₹5,000)',
+          tier: 'Level C',
           created_at: u.created_at
         };
       })
     );
+
+    // Calculate total team deposits across all tiers
+    const level1DepositInr = level1.reduce((sum, m) => sum + (Number(m.total_deposit || m.deposit_balance) || 0), 0);
+    const level2DepositInr = level2.reduce((sum, m) => sum + (Number(m.total_deposit || m.deposit_balance) || 0), 0);
+    const level3DepositInr = level3.reduce((sum, m) => sum + (Number(m.total_deposit || m.deposit_balance) || 0), 0);
+    const totalTeamDepositInr = level1DepositInr + level2DepositInr + level3DepositInr;
+    const totalTeamDepositUsdt = Number((totalTeamDepositInr / FIXED_RATE).toFixed(2));
 
     // Itemized referral commission records from transactions table
     const commTxs = await dbAll(
@@ -6315,7 +6397,7 @@ app.get('/api/team', authenticateToken, async (req, res) => {
          )
          AND LOWER(status) IN ('settled', 'approved', 'completed', 'successful')
        ORDER BY id DESC`,
-      [String(req.user.id), req.user.email || '', req.user.email || '']
+      [String(targetUser.id), targetUser.email || '', targetUser.email || '']
     );
 
     let levelAInr = 0;
@@ -6331,7 +6413,6 @@ app.get('/api/team', authenticateToken, async (req, res) => {
 
       const isLevelC = tierStr === 'level_c' || typeStr === 'referral_l3' || typeStr === 'level_c' || descStr.includes('level c') || notesStr.includes('level c') || descStr.includes('level 3') || notesStr.includes('level 3') || descStr.includes('1%') || notesStr.includes('1%');
       const isLevelB = tierStr === 'level_b' || typeStr === 'referral_l2' || typeStr === 'level_b' || descStr.includes('level b') || notesStr.includes('level b') || descStr.includes('level 2') || notesStr.includes('level 2') || descStr.includes('2.5%') || notesStr.includes('2.5%') || descStr.includes('2%') || notesStr.includes('2%');
-      const isLevelA = tierStr === 'level_a' || typeStr === 'referral_l1' || typeStr === 'level_a' || descStr.includes('level a') || notesStr.includes('level a') || descStr.includes('level 1') || notesStr.includes('level 1') || descStr.includes('5%') || notesStr.includes('5%') || descStr.includes('4%') || notesStr.includes('4%');
 
       if (isLevelC) {
         levelCInr += amt;
@@ -6343,24 +6424,34 @@ app.get('/api/team', authenticateToken, async (req, res) => {
     });
 
     const totalCommInr = levelAInr + levelBInr + levelCInr;
-
     const activeL1Count = level1.filter(m => m.is_active).length;
 
     res.json({
       success: true,
-      referral_code: user.referral_code,
+      referral_code: targetUser.referral_code || 'JUS7789',
+      total_team_deposit_inr: Number(totalTeamDepositInr.toFixed(2)),
+      total_team_deposit_usdt: totalTeamDepositUsdt,
+      team_deposit_inr: Number(totalTeamDepositInr.toFixed(2)),
+      team_deposit: Number(totalTeamDepositInr.toFixed(2)),
+      total_team_deposit: Number(totalTeamDepositInr.toFixed(2)),
+      level1_deposit_inr: Number(level1DepositInr.toFixed(2)),
+      level2_deposit_inr: Number(level2DepositInr.toFixed(2)),
+      level3_deposit_inr: Number(level3DepositInr.toFixed(2)),
       total_ref_earning_usdt: Number((totalCommInr / FIXED_RATE).toFixed(4)),
-      total_ref_earning_inr: totalCommInr.toFixed(2),
-      level_a_earning_inr: levelAInr.toFixed(2),
-      level_b_earning_inr: levelBInr.toFixed(2),
-      level_c_earning_inr: levelCInr.toFixed(2),
+      total_ref_earning_inr: Number(totalCommInr.toFixed(2)),
+      level_a_earning_inr: Number(levelAInr.toFixed(2)),
+      level_b_earning_inr: Number(levelBInr.toFixed(2)),
+      level_c_earning_inr: Number(levelCInr.toFixed(2)),
       l1_count: level1.length,
       l2_count: level2.length,
       l3_count: level3.length,
+      total_count: level1.length + level2.length + level3.length,
+      total_members_count: level1.length + level2.length + level3.length,
       l1_active_count: activeL1Count,
       level1,
       level2,
       level3,
+      all_team_members: [...level1, ...level2, ...level3],
       commissions: commTxs
     });
   } catch (err) {

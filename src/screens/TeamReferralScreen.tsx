@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { formatISTTimestamp } from '../utils/time';
 import { 
   Users, 
@@ -23,7 +23,8 @@ import {
   DollarSign,
   ArrowDownLeft,
   X,
-  ChevronRight
+  ChevronRight,
+  RefreshCw
 } from 'lucide-react';
 import { useApp, calculateAffiliateCommissionDetails } from '../context/AppContext';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
@@ -31,10 +32,23 @@ import { Transaction, User as UserType } from '../types';
 import { triggerConfirmSound, triggerCancelSound, triggerSwitchSound } from '../utils/haptics';
 
 export const TeamReferralScreen: React.FC = () => {
-  const { currentUser, allUsers, transactions, stats, showToast, commissionStats } = useApp();
+  const { currentUser, allUsers, transactions, stats, showToast, commissionStats, teamData, fetchTeamData } = useApp();
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    fetchTeamData();
+  }, [fetchTeamData]);
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    triggerSwitchSound();
+    await fetchTeamData();
+    showToast('Team statistics updated.');
+    setTimeout(() => setIsRefreshing(false), 600);
+  };
 
   // Filter & Search states for Commission History Table
   const [selectedTierFilter, setSelectedTierFilter] = useState<'All' | 'Level A' | 'Level B' | 'Level C'>('All');
@@ -72,12 +86,29 @@ export const TeamReferralScreen: React.FC = () => {
 
   // Level A Members: Users who directly registered with currentUser's code
   const directMembers = useMemo(() => {
+    if (teamData?.level1 && teamData.level1.length > 0) {
+      return teamData.level1.map(m => ({
+        id: String(m.id),
+        username: m.username,
+        email: m.email,
+        deposit_balance: Number(m.deposit_balance ?? m.total_deposit ?? 0),
+        total_deposit: Number(m.total_deposit ?? m.deposit_balance ?? 0),
+        vault_balance: Number(m.vault_balance ?? m.deposit_balance ?? 0),
+        commission_balance: Number(m.commission_earned_inr || 0),
+        total_commissions: Number(m.commission_earned_inr || 0),
+        referral_code: m.referral_code || 'JUS7789',
+        referred_by: m.referred_by || currentUser.referral_code,
+        role: 'user' as const,
+        status: (m.is_active ? 'Active' : 'Active') as any,
+        created_at: m.created_at || new Date().toISOString().slice(0, 10),
+      } as unknown as UserType));
+    }
     return (allUsers || []).filter(u => {
       if (u.id === currentUser.id || String(u.id) === String(currentUser.id)) return false;
       const refBy = (u.referred_by || u.referredBy || u.upline_code || u.referrer_id || '').toLowerCase().trim();
       return refBy ? myCodes.has(refBy) || u.referrer_id === currentUser.id : false;
     });
-  }, [allUsers, currentUser, myCodes]);
+  }, [teamData, allUsers, currentUser, myCodes]);
 
   const levelACodes = useMemo(() => {
     const codes = new Set<string>();
@@ -103,6 +134,23 @@ export const TeamReferralScreen: React.FC = () => {
 
   // Level B Members: Users who registered with a Level A member's code
   const indirectMembers = useMemo(() => {
+    if (teamData?.level2 && teamData.level2.length > 0) {
+      return teamData.level2.map(m => ({
+        id: String(m.id),
+        username: m.username,
+        email: m.email,
+        deposit_balance: Number(m.deposit_balance ?? m.total_deposit ?? 0),
+        total_deposit: Number(m.total_deposit ?? m.deposit_balance ?? 0),
+        vault_balance: Number(m.vault_balance ?? m.deposit_balance ?? 0),
+        commission_balance: Number(m.commission_earned_inr || 0),
+        total_commissions: Number(m.commission_earned_inr || 0),
+        referral_code: m.referral_code || 'JUS7789',
+        referred_by: m.referred_by,
+        role: 'user' as const,
+        status: (m.is_active ? 'Active' : 'Active') as any,
+        created_at: m.created_at || new Date().toISOString().slice(0, 10),
+      } as unknown as UserType));
+    }
     return (allUsers || []).filter(u => {
       if (u.id === currentUser.id || String(u.id) === String(currentUser.id)) return false;
       if (levelAUserIds.has(String(u.id).toLowerCase()) || levelAUserIds.has(u.email?.toLowerCase() || '')) return false;
@@ -118,7 +166,7 @@ export const TeamReferralScreen: React.FC = () => {
       const parent = userByCode.get(refBy);
       return parent ? levelAUserIds.has(String(parent.id).toLowerCase()) || levelAUserIds.has(parent.email?.toLowerCase() || '') : false;
     });
-  }, [allUsers, currentUser, levelAUserIds, levelACodes, userByCode, myCodes]);
+  }, [teamData, allUsers, currentUser, levelAUserIds, levelACodes, userByCode, myCodes]);
 
   const levelBUserIds = useMemo(() => {
     const ids = new Set<string>();
@@ -144,6 +192,23 @@ export const TeamReferralScreen: React.FC = () => {
   }, [indirectMembers]);
 
   const levelCMembers = useMemo(() => {
+    if (teamData?.level3 && teamData.level3.length > 0) {
+      return teamData.level3.map(m => ({
+        id: String(m.id),
+        username: m.username,
+        email: m.email,
+        deposit_balance: Number(m.deposit_balance ?? m.total_deposit ?? 0),
+        total_deposit: Number(m.total_deposit ?? m.deposit_balance ?? 0),
+        vault_balance: Number(m.vault_balance ?? m.deposit_balance ?? 0),
+        commission_balance: Number(m.commission_earned_inr || 0),
+        total_commissions: Number(m.commission_earned_inr || 0),
+        referral_code: m.referral_code || 'JUS7789',
+        referred_by: m.referred_by,
+        role: 'user' as const,
+        status: (m.is_active ? 'Active' : 'Active') as any,
+        created_at: m.created_at || new Date().toISOString().slice(0, 10),
+      } as unknown as UserType));
+    }
     return (allUsers || []).filter(u => {
       if (u.id === currentUser.id || String(u.id) === String(currentUser.id)) return false;
       if (levelAUserIds.has(String(u.id).toLowerCase()) || levelAUserIds.has(u.email?.toLowerCase() || '')) return false;
@@ -161,7 +226,7 @@ export const TeamReferralScreen: React.FC = () => {
       const parent = userByCode.get(refBy);
       return parent ? levelBUserIds.has(String(parent.id).toLowerCase()) || levelBUserIds.has(parent.email?.toLowerCase() || '') : false;
     });
-  }, [allUsers, currentUser, levelAUserIds, levelBUserIds, levelBCodes, userByCode, myCodes]);
+  }, [teamData, allUsers, currentUser, levelAUserIds, levelBUserIds, levelBCodes, userByCode, myCodes]);
 
   const levelCUserIds = useMemo(() => {
     const ids = new Set<string>();
@@ -173,8 +238,8 @@ export const TeamReferralScreen: React.FC = () => {
     return ids;
   }, [levelCMembers]);
 
-  const totalActiveNetworkSize = directMembers.length + indirectMembers.length + levelCMembers.length;
-  const totalReferredFriends = directMembers.length;
+  const totalActiveNetworkSize = (teamData?.total_count || (directMembers.length + indirectMembers.length + levelCMembers.length));
+  const totalReferredFriends = (teamData?.l1_count || directMembers.length);
 
   // Helper to identify the team member who generated a given commission transaction
   const getGeneratingMember = (tx: Transaction): UserType | null => {
@@ -664,11 +729,30 @@ export const TeamReferralScreen: React.FC = () => {
     };
   }, [allUsers, transactions, currentUser, settledDeposits, directMembers, indirectMembers, levelCMembers]);
 
-  const levelACommissions = affiliateStats.levelA;
-  const levelBCommissions = affiliateStats.levelB;
-  const levelCCommissions = affiliateStats.levelC || 0;
-  const totalTeamCommissions = affiliateStats.total;
-  const totalTeamDeposit = affiliateStats.teamDeposit;
+  const levelACommissions = Math.max(Number(teamData?.level_a_earning_inr || 0), affiliateStats.levelA);
+  const levelBCommissions = Math.max(Number(teamData?.level_b_earning_inr || 0), affiliateStats.levelB);
+  const levelCCommissions = Math.max(Number(teamData?.level_c_earning_inr || 0), affiliateStats.levelC || 0);
+  const totalTeamCommissions = Math.max(Number(teamData?.total_ref_earning_inr || 0), affiliateStats.total);
+  
+  const totalTeamDeposit = Math.max(
+    Number(teamData?.total_team_deposit_inr ?? teamData?.team_deposit_inr ?? teamData?.team_deposit ?? 0),
+    affiliateStats.teamDeposit
+  );
+
+  const levelADeposit = Math.max(
+    Number(teamData?.level1_deposit_inr || 0),
+    directMembers.reduce((sum, u) => sum + Number(u.deposit_balance || u.total_deposit || 0), 0)
+  );
+
+  const levelBDeposit = Math.max(
+    Number(teamData?.level2_deposit_inr || 0),
+    indirectMembers.reduce((sum, u) => sum + Number(u.deposit_balance || u.total_deposit || 0), 0)
+  );
+
+  const levelCDeposit = Math.max(
+    Number(teamData?.level3_deposit_inr || 0),
+    levelCMembers.reduce((sum, u) => sum + Number(u.deposit_balance || u.total_deposit || 0), 0)
+  );
 
   // Filtered Commission Records for Table
   const filteredCommissions = useMemo(() => {
@@ -768,10 +852,20 @@ export const TeamReferralScreen: React.FC = () => {
                 Total Referral Commissions
               </span>
             </div>
-            <span className="px-2.5 py-0.5 bg-emerald-950/80 text-emerald-300 rounded-full text-[10px] font-bold border border-emerald-700/50 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>3-Tier Active ({stats.direct_referral_rate || 4}% / {stats.indirect_referral_rate || 2}% / {stats.level_3_referral_rate || 1}%)</span>
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+                className="p-1 rounded-md bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer border border-slate-700/60"
+                title="Refresh live team metrics"
+              >
+                <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
+              </button>
+              <span className="px-2.5 py-0.5 bg-emerald-950/80 text-emerald-300 rounded-full text-[10px] font-bold border border-emerald-700/50 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>3-Tier Active ({stats.direct_referral_rate || 4}% / {stats.indirect_referral_rate || 2}% / {stats.level_3_referral_rate || 1}%)</span>
+              </span>
+            </div>
           </div>
 
           <div className="mt-2.5 flex items-baseline gap-1.5">
@@ -808,8 +902,8 @@ export const TeamReferralScreen: React.FC = () => {
               </strong>
             </div>
             <div>
-              <span className="text-[10px] block text-slate-400 font-medium">Team Deposit</span>
-              <strong className="text-xs font-bold font-mono text-white truncate block">
+              <span className="text-[10px] block text-slate-400 font-medium">Total Team Deposit</span>
+              <strong className="text-xs font-bold font-mono text-emerald-400 truncate block">
                 ₹{totalTeamDeposit.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
               </strong>
             </div>
@@ -940,7 +1034,8 @@ export const TeamReferralScreen: React.FC = () => {
               <span className="text-base font-extrabold font-mono text-emerald-700 block">
                 ₹{levelACommissions.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
-              <span className="text-[10px] text-slate-500 font-medium">{directMembers.length} Members</span>
+              <span className="text-[10px] text-slate-500 font-medium block">{directMembers.length} Members</span>
+              <span className="text-[10px] text-emerald-700 font-bold block">Inflow: ₹{levelADeposit.toLocaleString('en-IN')}</span>
             </div>
           </div>
 
@@ -1004,7 +1099,8 @@ export const TeamReferralScreen: React.FC = () => {
               <span className="text-base font-extrabold font-mono text-purple-800 block">
                 ₹{levelBCommissions.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
-              <span className="text-[10px] text-slate-500 font-medium">{indirectMembers.length} Members</span>
+              <span className="text-[10px] text-slate-500 font-medium block">{indirectMembers.length} Members</span>
+              <span className="text-[10px] text-purple-700 font-bold block">Inflow: ₹{levelBDeposit.toLocaleString('en-IN')}</span>
             </div>
           </div>
 
@@ -1068,7 +1164,8 @@ export const TeamReferralScreen: React.FC = () => {
               <span className="text-base font-extrabold font-mono text-blue-800 block">
                 ₹{levelCCommissions.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
-              <span className="text-[10px] text-slate-500 font-medium">{levelCMembers.length} Members</span>
+              <span className="text-[10px] text-slate-500 font-medium block">{levelCMembers.length} Members</span>
+              <span className="text-[10px] text-blue-700 font-bold block">Inflow: ₹{levelCDeposit.toLocaleString('en-IN')}</span>
             </div>
           </div>
 
