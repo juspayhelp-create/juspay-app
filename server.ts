@@ -51,6 +51,15 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// Strict Anti-Caching on All API Endpoints (Prevents Session & Data Leakage Across Browsers/Devices)
+app.use('/api', (_req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+  next();
+});
+
 // KYC File Uploads Directory & Static Serving
 const uploadsDir = path.join(process.cwd(), 'uploads');
 const kycUploadsDir = path.join(uploadsDir, 'kyc');
@@ -4588,7 +4597,7 @@ app.get('/api/claim/status', handleCardStatus);
 // INDIAN IDENTITY KYC VERIFICATION SYSTEM API ENDPOINTS
 // ============================================================================
 
-// User resolver helper for KYC operations
+// User resolver helper for KYC operations - Strictly isolated to verified JWT tokens
 async function resolveUserForKyc(req: any) {
   if (req.user) return req.user;
   const authHeader = req.headers['authorization'];
@@ -4605,16 +4614,6 @@ async function resolveUserForKyc(req: any) {
         if (u) return u;
       }
     } catch {}
-  }
-  const headerUserId = req.headers['x-user-id'] || req.query?.userId || req.body?.userId || req.body?.user_id;
-  if (headerUserId && !isNaN(Number(headerUserId))) {
-    const u = await dbGet('SELECT * FROM users WHERE id = ?', [Number(headerUserId)]);
-    if (u) return u;
-  }
-  const headerEmail = req.headers['x-user-email'] || req.query?.email || req.body?.email || req.body?.user_email;
-  if (headerEmail) {
-    const u = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER(?)', [String(headerEmail).trim()]);
-    if (u) return u;
   }
   return null;
 }
@@ -6091,42 +6090,9 @@ app.get('/api/withdrawals/my', authenticateToken, async (req, res) => {
 // 3-TIER REFERRAL & TEAM ENGINE
 // -------------------------------------------------------------
 
-app.get(['/api/team', '/api/user/team'], async (req, res) => {
+app.get(['/api/team', '/api/user/team'], authenticateToken, async (req, res) => {
   try {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-
-    let targetUser: any = null;
-
-    // Check token first
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (token && token !== 'null' && token !== 'undefined') {
-      try {
-        const decoded: any = jwt.verify(token, JWT_SECRET);
-        if (decoded?.id && isNumericId(decoded.id)) {
-          targetUser = await dbGet('SELECT * FROM users WHERE id = ?', [Number(decoded.id)]);
-        }
-        if (!targetUser && decoded?.email) {
-          targetUser = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER(?)', [String(decoded.email).trim()]);
-        }
-      } catch (err) {}
-    }
-
-    // Fallback to x-user-id header or query
-    if (!targetUser) {
-      const headerUid = req.headers['x-user-id'] || req.query.userId || req.query.user_id;
-      if (headerUid && headerUid !== 'guest') {
-        if (isNumericId(headerUid)) {
-          targetUser = await dbGet('SELECT * FROM users WHERE id = ?', [Number(headerUid)]);
-        }
-        if (!targetUser) {
-          targetUser = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER(?) OR LOWER(referral_code) = LOWER(?)', [String(headerUid).trim(), String(headerUid).trim()]);
-        }
-      }
-    }
-
+    const targetUser = req.user;
     if (!targetUser) {
       return res.status(401).json({ success: false, error: 'Authentication required to view team data.' });
     }

@@ -1420,25 +1420,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    const token = localStorage.getItem('juspay_auth_token') || localStorage.getItem('auth_token');
     const saved = localStorage.getItem('juspay_is_authenticated');
     const savedUid = localStorage.getItem('juspay_active_uid');
-    const token = localStorage.getItem('juspay_auth_token') || localStorage.getItem('auth_token');
 
-    if (saved === 'false' || savedUid === 'guest') {
+    if (!token || token === 'null' || token === 'undefined') {
       return false;
     }
-    if (saved === 'true' && savedUid && savedUid !== 'guest') {
-      return true;
+    if (saved === 'false' || savedUid === 'guest' || !savedUid) {
+      return false;
     }
-    if (token && savedUid && savedUid !== 'guest') {
-      return true;
-    }
-    return false;
+    return true;
   });
 
   const [currentUserId, setCurrentUserId] = useState<string>(() => {
+    const token = localStorage.getItem('juspay_auth_token') || localStorage.getItem('auth_token');
     const savedUid = localStorage.getItem('juspay_active_uid');
-    if (savedUid && savedUid !== '' && savedUid !== 'guest') {
+    if (token && token !== 'null' && token !== 'undefined' && savedUid && savedUid !== '' && savedUid !== 'guest') {
       return savedUid;
     }
     return 'guest';
@@ -3120,6 +3118,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     localStorage.removeItem('auth_token');
     localStorage.removeItem('juspay_active_user');
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('juspay_admin_token');
+    localStorage.removeItem('juspay_admin_auth_at');
+    try {
+      sessionStorage.clear();
+    } catch {}
+    setTeamData(null);
+    setTransactions([]);
     setActiveScreen('home');
     showToast('Logged out successfully.');
   };
