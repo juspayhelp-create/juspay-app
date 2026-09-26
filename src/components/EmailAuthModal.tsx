@@ -63,13 +63,16 @@ export const EmailAuthModal: React.FC<EmailAuthModalProps> = ({ isOpen, onClose 
     }
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     if (otpCode.length !== 6) {
       showToast('Please enter all 6 digits of the OTP.');
       return;
     }
     triggerConfirmSound();
-    const ok = verifyEmailOTP(email, otpCode);
+    setIsSending(true);
+    const ok = await verifyEmailOTP(email.trim().toLowerCase(), otpCode.trim());
+    setIsSending(false);
+
     if (ok) {
       triggerSuccessSound();
       setStep('email');
@@ -80,7 +83,7 @@ export const EmailAuthModal: React.FC<EmailAuthModalProps> = ({ isOpen, onClose 
       if (onClose) onClose();
       else setIsAuthModalOpen(false);
     } else {
-      showToast('Invalid or expired 6-digit code. Please try again.');
+      showToast('Invalid or expired 6-digit code, or account not registered.');
     }
   };
 

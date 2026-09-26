@@ -1940,28 +1940,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         } catch {}
 
         if (!baseUser!) {
-          const isAdminId = currentUserId === 'admin_master' || currentUserId === '1' || currentUserId === 'admin' || isAdminAuthenticated || !!localStorage.getItem('juspay_admin_token');
-          baseUser = {
-            id: currentUserId,
-            username: isAdminId ? 'Administrator' : 'User',
-            email: isAdminId ? 'admin@juspay.io' : '',
-            available_balance: isAdminId ? 999999.0 : 0.0,
-            deposit_balance: isAdminId ? 999999.0 : 0.0,
-            withdrawal_balance: 0.0,
-            commission_balance: 0.0,
-            sell_balance: 0.0,
-            selling_cards: isAdminId ? 100 : 0,
-            referral_code: isAdminId ? 'JUSADMIN' : 'JUS7789',
-            referral_link: `${window.location.origin || 'https://juspay.io'}/?ref=${isAdminId ? 'JUSADMIN' : 'JUS7789'}`,
-            security_pin: isAdminId ? '888888' : '123456',
-            securityPin: isAdminId ? '888888' : '123456',
-            role: isAdminId ? 'admin' : 'user',
-            status: 'Active',
-            avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUserId}`,
-            points: isAdminId ? 9999 : 0,
-            created_at: new Date().toISOString().slice(0, 10),
-            signup_cards_claimed: false,
-          };
+          const isAdminId = isAdminAuthenticated && !!localStorage.getItem('juspay_admin_token') && (currentUserId === 'admin_master' || currentUserId === '1' || currentUserId === 'admin');
+          if (isAdminId) {
+            baseUser = { ...DEFAULT_ADMIN_USER };
+          } else {
+            baseUser = { ...GUEST_USER };
+          }
         }
       }
     } else {
@@ -3042,27 +3026,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         showToast(`Welcome back, ${mappedUser.username}!`);
         setIsAuthModalOpen(false);
         return;
-      } else if (res.status === 404 || data.notFound) {
+      } else {
         showToast(data.error || 'Account not found. Please register first.');
         return;
       }
     } catch (err) {
       console.warn('[AppContext] loginOrCreateUser token fetch note:', err);
-    }
-
-    let user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
-
-    if (!user) {
       showToast('Account not found. Please register first.');
-    } else {
-      setIsAuthenticated(true);
-      localStorage.setItem('juspay_is_authenticated', 'true');
-      setCurrentUserId(user.id);
-      localStorage.setItem('juspay_active_uid', user.id);
-      localStorage.setItem('juspay_active_user', JSON.stringify(user));
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      showToast(`Welcome back, ${user.username}!`);
-      setIsAuthModalOpen(false);
     }
   };
 
@@ -3158,42 +3128,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
         showToast(`Welcome back, ${mappedUser.username}!`);
         return { success: true, message: 'Signed in successfully.' };
-      } else if (res.status === 400 || res.status === 401 || res.status === 404 || !data.success) {
+      } else {
         return {
           success: false,
           notFound: Boolean(data.notFound || res.status === 404),
-          message: data.error || 'Account not found. Please register first.'
+          message: data.error || data.message || 'Account not found. Please register first.'
         };
       }
     } catch (err) {
       console.warn('[AppContext] login-pin fetch exception:', err);
+      return {
+        success: false,
+        message: 'Network error connecting to authentication server. Please check your connection.'
+      };
     }
-
-    const user = allUsers.find(u => u.email.toLowerCase() === cleanEmail);
-
-    if (!user) {
-      return { success: false, notFound: true, message: 'Account not found. Please register first.' };
-    }
-
-    const storedPin = (user.security_pin !== undefined && user.security_pin !== null && String(user.security_pin).trim() !== '')
-      ? String(user.security_pin).trim()
-      : ((user as any).securityPin !== undefined && (user as any).securityPin !== null && String((user as any).securityPin).trim() !== ''
-        ? String((user as any).securityPin).trim()
-        : '123456');
-
-    if (storedPin !== cleanPin) {
-      return { success: false, message: 'Incorrect 6-digit Security PIN.' };
-    }
-
-    setIsAuthenticated(true);
-    setCurrentUserId(user.id);
-    localStorage.setItem('juspay_is_authenticated', 'true');
-    localStorage.setItem('juspay_active_uid', user.id);
-    localStorage.setItem('juspay_active_user', JSON.stringify(user));
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    setIsAuthModalOpen(false);
-    showToast(`Welcome back, ${user.username}!`);
-    return { success: true, message: 'Signed in successfully.' };
   };
 
   const refreshUserProfile = async () => {

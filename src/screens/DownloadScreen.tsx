@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { JuspayLogo } from '../components/JuspayLogo';
+import { PWAInstallButton } from '../components/PWAInstallButton';
 
 interface DownloadScreenProps {
   onBack?: () => void;
@@ -465,7 +466,7 @@ export const DownloadScreen: React.FC<DownloadScreenProps> = ({ onBack, initialT
                 </div>
               </div>
 
-              {/* Download APK Action Button */}
+              {/* Download APK & PWA Action Buttons */}
               <div className="space-y-2 pt-1">
                 <button
                   type="button"
@@ -485,6 +486,10 @@ export const DownloadScreen: React.FC<DownloadScreenProps> = ({ onBack, initialT
                     </>
                   )}
                 </button>
+
+                <div className="flex items-center justify-center">
+                  <PWAInstallButton className="w-full justify-center py-2.5" />
+                </div>
 
                 <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
                   <span className="flex items-center gap-1">

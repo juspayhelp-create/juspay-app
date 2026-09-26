@@ -62,6 +62,65 @@ try {
 }
 app.use('/uploads', express.static(uploadsDir));
 
+// Static Public Assets Serving (Directly serve public assets before SPA routing)
+const publicAssetsDir = path.resolve(process.cwd(), 'public');
+app.use(express.static(publicAssetsDir));
+
+// Explicit PWA Manifest & Service Worker Endpoints (for PWABuilder & Mobile APK Packaging)
+app.get(['/manifest.json', '/manifest.webmanifest'], (_req, res) => {
+  const manifestPath = path.join(publicAssetsDir, 'manifest.json');
+  if (fs.existsSync(manifestPath)) {
+    res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.sendFile(manifestPath);
+  }
+  res.status(404).send('Manifest not found');
+});
+
+app.get(['/sw.js', '/serviceworker.js'], (_req, res) => {
+  const swPath = path.join(publicAssetsDir, 'sw.js');
+  if (fs.existsSync(swPath)) {
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    return res.sendFile(swPath);
+  }
+  res.status(404).send('Service worker not found');
+});
+
+// Direct Logo & Icon Download Endpoints with Forced Attachment Headers
+app.get(['/api/download/logo.png', '/download/logo.png', '/api/logo.png', '/download-logo.png'], (_req, res) => {
+  const filePath = path.join(publicAssetsDir, 'app-icon.png');
+  if (fs.existsSync(filePath)) {
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', 'attachment; filename="juspay-vault-logo.png"');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.sendFile(filePath);
+  }
+  res.status(404).send('Logo not found');
+});
+
+app.get(['/api/download/logo-hd.png', '/download/logo-hd.png', '/api/logo-1024.png', '/download-logo-hd.png'], (_req, res) => {
+  const filePath = path.join(publicAssetsDir, 'app-icon-1024.png');
+  if (fs.existsSync(filePath)) {
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', 'attachment; filename="juspay-vault-logo-hd.png"');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.sendFile(filePath);
+  }
+  res.status(404).send('Logo not found');
+});
+
+app.get(['/api/download/logo.svg', '/download/logo.svg', '/api/logo.svg'], (_req, res) => {
+  const filePath = path.join(publicAssetsDir, 'assets', 'juspay-logo.svg');
+  if (fs.existsSync(filePath)) {
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.setHeader('Content-Disposition', 'attachment; filename="juspay-vault-logo.svg"');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.sendFile(filePath);
+  }
+  res.status(404).send('Logo not found');
+});
+
 const kycStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     try {

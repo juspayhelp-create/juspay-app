@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@emailjs/nodejs": "^5.0.2",
+    "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/vite": "^4.0.9",
     "@types/archiver": "^8.0.0",
     "@types/canvas-confetti": "^1.9.0",
@@ -40,6 +41,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.18.4",
+    "sharp": "^0.35.4",
     "tailwind-merge": "^3.0.2",
     "tailwindcss": "^4.0.9",
     "tsx": "^4.23.13",
