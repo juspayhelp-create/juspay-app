@@ -98,9 +98,12 @@ export const PaymentScreen: React.FC = () => {
             </div>
           </div>
 
-          <div className="px-2.5 py-1 bg-emerald-600 text-white font-extrabold text-xs rounded-lg flex items-center gap-1 shadow-xs border border-emerald-700 animate-shimmer-sweep">
-            <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-            <span>{stats.commission_rate.toFixed(2)}% Cashback</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-xl shadow-sm text-xs font-semibold shrink-0">
+            <span>⚡</span>
+            <div className="flex flex-col text-right leading-tight">
+              <span className="font-extrabold text-white text-xs">{((currentUser as any)?.cashbackRate || stats?.commission_rate || 4.00) ? `${Number((currentUser as any)?.cashbackRate || stats?.commission_rate || 4.00).toFixed(2)}%` : '4.00%'}</span>
+              <span className="text-[10px] font-normal text-emerald-100">Cashback</span>
+            </div>
           </div>
         </div>
 
