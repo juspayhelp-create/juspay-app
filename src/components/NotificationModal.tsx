@@ -40,7 +40,7 @@ export const NotificationModal: React.FC<{ isOpen: boolean; onClose: () => void 
     showToast
   } = useApp();
   
-  const [filter, setFilter] = useState<'All' | 'Unread' | 'Notices' | 'Deposit' | 'Withdrawal' | 'Reward' | 'KYC'>('All');
+  const [filter, setFilter] = useState<'All' | 'Unread' | 'Notices' | 'Deposit' | 'Withdrawal'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [readNoticeIds, setReadNoticeIds] = useState<string[]>(() => {
@@ -146,8 +146,6 @@ export const NotificationModal: React.FC<{ isOpen: boolean; onClose: () => void 
     if (filter === 'Notices' && !item.isNotice) return false;
     if (filter === 'Deposit' && item.type !== 'Deposit') return false;
     if (filter === 'Withdrawal' && item.type !== 'Withdrawal') return false;
-    if (filter === 'Reward' && item.type !== 'Commission' && item.type !== 'Reward') return false;
-    if (filter === 'KYC' && item.type !== 'KYC' && item.type !== 'System' && !item.title.includes('KYC') && !item.message.includes('KYC')) return false;
 
     // Search query filter
     if (searchQuery.trim()) {
@@ -300,9 +298,7 @@ export const NotificationModal: React.FC<{ isOpen: boolean; onClose: () => void 
               { id: 'Unread', label: '🔴 Unread', count: unreadCount },
               { id: 'Notices', label: '📢 Notices', count: activeNotices.length },
               { id: 'Deposit', label: '📥 Deposits', count: notifListItems.filter(n => n.type === 'Deposit').length },
-              { id: 'Withdrawal', label: '📤 Payouts', count: notifListItems.filter(n => n.type === 'Withdrawal').length },
-              { id: 'Reward', label: '🎁 Rewards', count: notifListItems.filter(n => n.type === 'Commission' || n.type === 'Reward').length },
-              { id: 'KYC', label: '🛡️ KYC', count: notifListItems.filter(n => n.type === 'KYC' || n.title.includes('KYC')).length }
+              { id: 'Withdrawal', label: '📤 Payouts', count: notifListItems.filter(n => n.type === 'Withdrawal').length }
             ].map(tab => (
               <button
                 key={tab.id}
