@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { 
   Calendar, 
   Coins, 
@@ -26,9 +26,22 @@ export const StatisticsScreen: React.FC = () => {
     fetchTeamData
   } = useApp();
 
+  const [serverStats, setServerStats] = useState<any>(null);
+
   useEffect(() => {
     fetchTeamData();
-  }, [fetchTeamData]);
+    const token = localStorage.getItem('juspay_auth_token') || localStorage.getItem('auth_token');
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (currentUser?.id && currentUser.id !== 'guest') headers['x-user-id'] = String(currentUser.id);
+
+    fetch('/api/user/stats', { headers })
+      .then(r => r.json())
+      .then(d => {
+        if (d?.success) setServerStats(d);
+      })
+      .catch(() => {});
+  }, [fetchTeamData, currentUser?.id]);
 
   // Calculate user's Level 1, Level 2, and Level 3 referrals count
   const referralCounts = useMemo(() => {
@@ -116,15 +129,36 @@ export const StatisticsScreen: React.FC = () => {
       level3: l3,
       total: l1 + l2 + l3
     };
-  }, [allUsers, currentUser]);
+  }, [allUsers, currentUser, teamData]);
 
-  // Real-time dynamic calculation for Total Cashback Profit:
-  // 1. Profit from user's claimed cashback orders
+  // 1. Referral Commissions (L1 + L2 + L3)
+  const totalReferralCommissions = Number(
+    serverStats?.referral_commissions ??
+    getAffiliateCommissions(currentUser.id) ??
+    currentUser.total_commissions ??
+    currentUser.commission_balance ??
+    0
+  );
+
+  // 2. Task Rewards
+  const userCompletedTasksIncome = transactions
+    .filter(t => (String(t.user_id) === String(currentUser.id) || (currentUser.email && t.user_email === currentUser.email)) &&
+                 (t.type === 'Task Points' || t.type === 'Reward' || t.type === 'task_reward' || t.type === 'Binding Bonus') &&
+                 (t.status === 'Completed' || t.status === 'completed' || t.status === 'successful' || t.status === 'approved' || t.status === 'Settled' || t.status === 'settled'))
+    .reduce((sum, t) => sum + Number(t.amount_inr || t.amount || 0), 0);
+
+  const totalTaskRewardIncome = Number(
+    serverStats?.task_reward_income ??
+    userCompletedTasksIncome
+  );
+
+  // 3. Real-time dynamic calculation for Deposit Cashback Profit:
+  // 3a. Profit from user's claimed cashback orders
   const activeOrdersCashbackProfit = claimableOrders
     .filter(o => isOrderClaimedByUser(o.id, currentUser.id))
     .reduce((sum, o) => sum + (o.income_inr || (o.amount_inr * (o.cashback_rate || 4)) / 100), 0);
 
-  // 2. Profit from user's historical completed 'Claim' / 'cashback_reward' transactions
+  // 3b. Profit from user's historical completed 'Claim' / 'cashback_reward' transactions
   const userCompletedClaims = transactions.filter(
     t => (String(t.user_id) === String(currentUser.id) || (currentUser.email && t.user_email === currentUser.email)) &&
          (t.type === 'Claim' || t.type === 'cashback_reward') &&
@@ -139,7 +173,19 @@ export const StatisticsScreen: React.FC = () => {
       return sum + (t.amount_inr || t.amount || 0);
     }, 0);
 
-  const totalCashbackProfit = Number((activeOrdersCashbackProfit + historicalClaimsProfit).toFixed(2));
+  const totalCashbackProfit = Number(
+    serverStats?.deposit_cashback_profit ??
+    Number((activeOrdersCashbackProfit + historicalClaimsProfit).toFixed(2))
+  );
+
+  // Total Platform Income = Commissions + Tasks + Cashback
+  const totalPlatformIncome = Number(
+    serverStats?.total_platform_income ??
+    serverStats?.totalPlatformIncome ??
+    currentUser.total_platform_income ??
+    currentUser.totalPlatformIncome ??
+    Number((totalReferralCommissions + totalTaskRewardIncome + totalCashbackProfit).toFixed(2))
+  );
 
   // Real-time dynamic calculation for Completed Cashback Tasks count:
   const activeClaimedCount = claimableOrders.filter(o => isOrderClaimedByUser(o.id, currentUser.id)).length;
@@ -270,19 +316,19 @@ export const StatisticsScreen: React.FC = () => {
 
         <div className="grid grid-cols-2 gap-2.5">
           
-          {/* Total Cashback Profit */}
+          {/* TOTAL PLATFORM INCOME */}
           <div className="fintech-card p-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Total Cashback Profit</span>
+              <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">TOTAL PLATFORM INCOME</span>
               <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-200">
                 <Coins className="w-3.5 h-3.5" />
               </div>
             </div>
             <div className="mt-1.5">
               <span className="text-base font-extrabold text-slate-900 font-mono block tabular-nums">
-                ₹{totalCashbackProfit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                ₹{Number(totalPlatformIncome || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </span>
-              <span className="text-[10px] text-emerald-800 block mt-0.5 font-bold">Realized Cashback Return</span>
+              <span className="text-[10px] text-emerald-800 block mt-0.5 font-bold">Commissions + Tasks + Cashback</span>
             </div>
           </div>
 
@@ -383,3 +429,4 @@ export const StatisticsScreen: React.FC = () => {
     </div>
   );
 };
+

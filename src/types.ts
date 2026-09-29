@@ -35,6 +35,8 @@ export interface User {
   locked_balance?: number;
   total_paid_withdrawals?: number;
   total_rewards?: number;
+  total_platform_income?: number;
+  totalPlatformIncome?: number;
   kyc_status?: KycStatus;
   kyc_rejection_reason?: string;
   kyc_verified_at?: string;
@@ -235,6 +237,8 @@ export interface StatisticsOperations {
   withdrawal_fee?: number;
   sla_badge_text?: string;
   sla_banner_enabled?: boolean;
+  total_platform_income?: number;
+  totalPlatformIncome?: number;
 }
 
 export interface SLAAnnouncement {

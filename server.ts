@@ -519,6 +519,7 @@ async function initDatabase() {
     await dbRun('ALTER TABLE users ADD COLUMN IF NOT EXISTS total_inflow NUMERIC DEFAULT 0');
     await dbRun('ALTER TABLE users ADD COLUMN IF NOT EXISTS total_deposit NUMERIC DEFAULT 0');
     await dbRun('ALTER TABLE users ADD COLUMN IF NOT EXISTS total_withdrawal NUMERIC DEFAULT 0');
+    await dbRun('ALTER TABLE users ADD COLUMN IF NOT EXISTS total_platform_income NUMERIC(15, 2) DEFAULT 0.00');
     try {
       await dbRun("ALTER TABLE users ADD COLUMN IF NOT EXISTS security_pin VARCHAR(6) NOT NULL DEFAULT '123456'");
     } catch (e) {
@@ -2316,6 +2317,8 @@ function formatUserResponse(user: any) {
     total_deposit: Number(user.total_deposit ?? liveDepositBal),
     total_withdrawal: Number(user.total_withdrawal ?? liveLockedBal),
     total_ref_earning: canonicalCommissions,
+    total_platform_income: Number(user.total_platform_income ?? 0),
+    totalPlatformIncome: Number(user.total_platform_income ?? 0),
     kyc_status: user.kyc_status || 'NOT_SUBMITTED',
     kyc_rejection_reason: user.kyc_rejection_reason || null,
     kyc_verified_at: user.kyc_verified_at ? new Date(user.kyc_verified_at).toISOString() : null,
@@ -5486,6 +5489,131 @@ app.get(
       });
     } catch (err) {
       res.status(500).json({ error: 'Failed to retrieve user session.' });
+    }
+  }
+);
+
+// User Aggregated Statistics & Total Platform Income Dashboard (/api/user/stats, /api/user/dashboard-summary)
+app.get(
+  [
+    '/api/user/stats',
+    '/api/user/dashboard-summary',
+    '/api/stats/user'
+  ],
+  authenticateToken,
+  async (req: any, res: any) => {
+    try {
+      const userId = req.user.id;
+      const targetIdStr = String(userId);
+      const rawUser = await dbGet('SELECT * FROM users WHERE id = ?', [userId]);
+      if (!rawUser) {
+        return res.status(404).json({ success: false, error: 'User not found' });
+      }
+      const user = await getLiveUserWithLedgerSync(rawUser);
+      const targetEmail = (user.email || '').trim();
+
+      // 1. Referral Commissions (L1 + L2 + L3)
+      let totalCommissions = 0;
+      try {
+        const commRes = await dbGet(
+          `SELECT COALESCE(SUM(amount), 0) AS total 
+           FROM affiliate_commissions 
+           WHERE CAST(user_id AS TEXT) = ? OR CAST(recipient_user_id AS TEXT) = ?`,
+          [targetIdStr, targetIdStr]
+        );
+        totalCommissions = Number(commRes?.total || 0);
+      } catch {}
+
+      if (totalCommissions === 0) {
+        try {
+          const txCommRes = await dbGet(
+            `SELECT COALESCE(SUM(amount), 0) AS total 
+             FROM transactions 
+             WHERE (CAST(user_id AS TEXT) = ? OR (LOWER(user_email) = LOWER(?) AND ? != '')) 
+               AND type IN ('commission', 'Commission', 'Referral Commission', 'REFERRAL_L1', 'REFERRAL_L2', 'REFERRAL_L3') 
+               AND status IN ('Completed', 'completed', 'settled', 'Settled', 'approved', 'Approved', 'successful', 'Successful')`,
+            [targetIdStr, targetEmail, targetEmail]
+          );
+          totalCommissions = Number(txCommRes?.total || 0);
+        } catch {}
+      }
+      if (totalCommissions === 0) {
+        totalCommissions = Number(user.total_commissions ?? user.commission_balance ?? user.total_ref_earning ?? 0);
+      }
+
+      // 2. Task Reward Income
+      let totalTaskRewards = 0;
+      try {
+        const taskProgRes = await dbGet(
+          `SELECT COALESCE(SUM(reward_inr), 0) AS total 
+           FROM user_task_progress 
+           WHERE CAST(user_id AS TEXT) = ? AND (is_claimed = 1 OR is_claimed = true OR is_completed = 1 OR is_completed = true)`,
+          [targetIdStr]
+        );
+        totalTaskRewards = Number(taskProgRes?.total || 0);
+      } catch {}
+
+      try {
+        const txTaskRes = await dbGet(
+          `SELECT COALESCE(SUM(amount), 0) AS total 
+           FROM transactions 
+           WHERE (CAST(user_id AS TEXT) = ? OR (LOWER(user_email) = LOWER(?) AND ? != '')) 
+             AND type IN ('Task Points', 'Reward', 'task_reward', 'Binding Bonus', 'binding_bonus') 
+             AND status IN ('Completed', 'completed', 'settled', 'Settled', 'approved', 'Approved', 'successful', 'Successful')`,
+          [targetIdStr, targetEmail, targetEmail]
+        );
+        totalTaskRewards += Number(txTaskRes?.total || 0);
+      } catch {}
+
+      // 3. Deposit Cashback Profit
+      let totalCashback = 0;
+      try {
+        const cbRes = await dbGet(
+          `SELECT COALESCE(SUM(income_inr), 0) AS total 
+           FROM user_claimed_cashback 
+           WHERE CAST(user_id AS TEXT) = ?`,
+          [targetIdStr]
+        );
+        totalCashback = Number(cbRes?.total || 0);
+      } catch {}
+
+      try {
+        const txCbRes = await dbGet(
+          `SELECT COALESCE(SUM(amount), 0) AS total 
+           FROM transactions 
+           WHERE (CAST(user_id AS TEXT) = ? OR (LOWER(user_email) = LOWER(?) AND ? != '')) 
+             AND type IN ('Claim', 'cashback_reward', 'cashback') 
+             AND status IN ('Completed', 'completed', 'settled', 'Settled', 'approved', 'Approved', 'successful', 'Successful')`,
+          [targetIdStr, targetEmail, targetEmail]
+        );
+        totalCashback += Number(txCbRes?.total || 0);
+      } catch {}
+
+      const totalPlatformIncome = Number((totalCommissions + totalTaskRewards + totalCashback).toFixed(2));
+
+      // Persist aggregated total_platform_income to users table
+      try {
+        await dbRun('UPDATE users SET total_platform_income = ? WHERE id = ?', [totalPlatformIncome, userId]);
+      } catch {}
+
+      res.json({
+        success: true,
+        total_platform_income: totalPlatformIncome,
+        totalPlatformIncome: totalPlatformIncome,
+        referral_commissions: Number(totalCommissions.toFixed(2)),
+        referralCommissions: Number(totalCommissions.toFixed(2)),
+        task_reward_income: Number(totalTaskRewards.toFixed(2)),
+        taskRewardIncome: Number(totalTaskRewards.toFixed(2)),
+        deposit_cashback_profit: Number(totalCashback.toFixed(2)),
+        depositCashbackProfit: Number(totalCashback.toFixed(2)),
+        vault_balance: Number(user.vault_balance ?? 0),
+        deposit_balance: Number(user.deposit_balance ?? 0),
+        selling_cards: Number(user.usdt_cards_balance ?? user.selling_cards ?? 0),
+        user: formatUserResponse(user)
+      });
+    } catch (err: any) {
+      console.error('Error fetching user stats:', err);
+      res.status(500).json({ success: false, error: err.message });
     }
   }
 );
