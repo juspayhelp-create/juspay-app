@@ -3843,7 +3843,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         tx_id: txHashOrUtr || `TX${Math.random().toString(36).substring(2, 12).toUpperCase()}`,
         utr_number: txHashOrUtr,
         proof_screenshot: proofScreenshot,
-        notes: `USDT Deposit: ${usdtAmount} USDT (${network}) - Pending Admin Verification`,
+        notes: `USDT Deposit: ${usdtAmount} USDT (${network}) - Pending Verification`,
       };
 
       setTransactions(prev => [newTx, ...prev]);
@@ -3852,14 +3852,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         id: `notif_${Date.now()}`,
         user_id: currentUser.id,
         title: 'Deposit Request Submitted',
-        message: `Your deposit request of ${usdtAmount} USDT (₹${inrAmount.toLocaleString('en-IN')} INR) on ${network} has been submitted for admin verification.`,
+        message: `Your deposit request of ${usdtAmount} USDT (₹${inrAmount.toLocaleString('en-IN')} INR) on ${network} has been submitted for verification.`,
         type: 'Deposit',
         is_read: false,
         created_at: now,
       };
       setNotifications(prev => [notif, ...prev]);
 
-      showToast(`Deposit request of ₹${inrAmount.toLocaleString('en-IN')} (${usdtAmount} USDT) submitted! Pending admin verification.`);
+      showToast(`Deposit request of ₹${inrAmount.toLocaleString('en-IN')} (${usdtAmount} USDT) submitted! Pending verification.`);
     } else {
       // UPI / Bank Transfer
       inrAmount = Number(amount.toFixed(2));
@@ -3889,7 +3889,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         wallet_provider: provider,
         wallet_id: walletId,
         proof_screenshot: proofScreenshot,
-        notes: `${depositMethod} Deposit via ${provider} (UTR: ${txHashOrUtr || 'Auto'}) - Pending Admin Verification`,
+        notes: `${depositMethod} Deposit via ${provider} (UTR: ${txHashOrUtr || 'Auto'}) - Pending Verification`,
       };
 
       setTransactions(prev => [newTx, ...prev]);
@@ -3898,14 +3898,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         id: `notif_${Date.now()}`,
         user_id: currentUser.id,
         title: 'Deposit Request Submitted',
-        message: `Your deposit request of ₹${inrAmount.toLocaleString('en-IN')} via ${provider} (UTR: ${newTx.utr_number}) has been submitted for admin verification.`,
+        message: `Your deposit request of ₹${inrAmount.toLocaleString('en-IN')} via ${provider} (UTR: ${newTx.utr_number}) has been submitted for verification.`,
         type: 'Deposit',
         is_read: false,
         created_at: now,
       };
       setNotifications(prev => [notif, ...prev]);
 
-      showToast(`Deposit request of ₹${inrAmount.toLocaleString('en-IN')} submitted! Pending admin verification.`);
+      showToast(`Deposit request of ₹${inrAmount.toLocaleString('en-IN')} submitted! Pending verification.`);
     }
 
     // Persist deposit request with Pending status to server
@@ -3970,7 +3970,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       durationMs: 3000,
     });
 
-    return { success: true, message: `Deposit request of ₹${inrAmount.toLocaleString('en-IN')} submitted! It is now pending admin verification.` };
+    return { success: true, message: `Deposit request of ₹${inrAmount.toLocaleString('en-IN')} submitted! It is now pending verification.` };
   };
 
   // Unified USDT Selling Cards Lifecycle (Initial Signup Bonus & 11:00 PM IST Daily Reset)
@@ -4260,7 +4260,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         id: `notif_${Date.now()}`,
         user_id: currentUser.id,
         title: 'Withdrawal Processing',
-        message: `Your withdrawal request of ₹${amountINR.toLocaleString('en-IN')} has been placed in escrow hold. Pending admin approval.`,
+        message: `Your withdrawal request of ₹${amountINR.toLocaleString('en-IN')} has been placed in escrow hold. Pending verification.`,
         type: 'Withdrawal',
         is_read: false,
         created_at: now,

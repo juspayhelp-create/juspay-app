@@ -5730,7 +5730,7 @@ app.post(['/api/deposits', '/api/deposit'], authenticateToken, async (req, res) 
 
     res.json({
       success: true,
-      message: `Deposit request of ₹${amountInr.toLocaleString('en-IN')} (${amountUsdt} USDT) submitted successfully! It is now pending admin verification.`,
+      message: `Deposit request of ₹${amountInr.toLocaleString('en-IN')} (${amountUsdt} USDT) submitted successfully! It is now pending verification.`,
       order_id: orderId,
       amount_usdt: amountUsdt,
       amount_inr: amountInr,
@@ -6459,7 +6459,7 @@ async function handleWithdrawalSubmit(req: any, res: any) {
 
     res.json({
       success: true,
-      message: `Withdrawal request for ₹${amountInr.toLocaleString('en-IN')} (${amountUsdt} USDT) placed on escrow hold! Pending administrative review.`,
+      message: `Withdrawal request for ₹${amountInr.toLocaleString('en-IN')} (${amountUsdt} USDT) placed on escrow hold! Pending review.`,
       order_id: orderId,
       tx_id: orderId,
       amount_usdt: amountUsdt,

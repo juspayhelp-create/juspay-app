@@ -129,7 +129,7 @@ export const WithdrawalScreen: React.FC = () => {
     }
 
     if (hasActiveWithdrawal) {
-      showToast(`You already have an active pending withdrawal (Order: ${activeOrderId || 'Active'}). Strictly 1 withdrawal at a time. Please wait for admin processing.`);
+      showToast(`You already have an active pending withdrawal (Order: ${activeOrderId || 'Active'}). Strictly 1 withdrawal at a time. Please wait for processing.`);
       return;
     }
     if (userCards < 1) {
