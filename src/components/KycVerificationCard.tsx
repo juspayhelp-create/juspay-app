@@ -621,7 +621,7 @@ export const KycVerificationCard: React.FC<KycVerificationCardProps> = ({
                         </span>
                       </div>
                       <p className="text-xs text-emerald-800 mt-1">
-                        Your government document has been verified. High-volume deposits, withdrawals, and merchant tools are permanently unlocked for account <strong className="font-mono text-emerald-900 font-extrabold">#{currentUser.id}</strong>.
+                        Your government document has been verified. High-volume deposits, withdrawals, and merchant tools are permanently unlocked.
                       </p>
                     </div>
                   </div>
