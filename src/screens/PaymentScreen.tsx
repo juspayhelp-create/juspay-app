@@ -86,10 +86,10 @@ export const PaymentScreen: React.FC = () => {
     <div className="space-y-3.5 pb-24 animate-in fade-in duration-150">
       
       {/* 1. Hero Card: Cashback %, Balance, Total Rewards, Pending */}
-      <div className="fintech-card p-4 space-y-3">
+      <div className="fintech-card p-4 space-y-3 hover-lift animate-fade-in-up">
         <div className="flex items-center justify-between pb-3 border-b border-slate-200">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center font-bold border border-emerald-200">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center font-bold border border-emerald-200 shadow-2xs">
               <Percent className="w-4.5 h-4.5 stroke-[2.2]" />
             </div>
             <div>
@@ -98,7 +98,7 @@ export const PaymentScreen: React.FC = () => {
             </div>
           </div>
 
-          <div className="px-2.5 py-1 bg-emerald-600 text-white font-extrabold text-xs rounded-lg flex items-center gap-1 shadow-xs border border-emerald-700">
+          <div className="px-2.5 py-1 bg-emerald-600 text-white font-extrabold text-xs rounded-lg flex items-center gap-1 shadow-xs border border-emerald-700 animate-shimmer-sweep">
             <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
             <span>{stats.commission_rate.toFixed(2)}% Cashback</span>
           </div>
@@ -106,21 +106,21 @@ export const PaymentScreen: React.FC = () => {
 
         {/* 3 Metric Summary Blocks */}
         <div className="grid grid-cols-3 gap-2">
-          <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-300 text-center">
+          <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-300 text-center hover-lift">
             <span className="text-[10px] text-slate-700 font-bold block truncate uppercase">Balance</span>
             <strong className="text-xs font-extrabold font-mono text-slate-900 block mt-0.5">
               ₹{(currentUser.vault_balance ?? 0).toFixed(0)}
             </strong>
           </div>
 
-          <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-300 text-center">
+          <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-300 text-center hover-lift">
             <span className="text-[10px] text-emerald-900 font-bold block truncate uppercase">Total Rewards</span>
             <strong className="text-xs font-extrabold font-mono text-emerald-950 block mt-0.5">
               ₹{totalRewards.toFixed(0)}
             </strong>
           </div>
 
-          <div className="p-2.5 bg-amber-50 rounded-xl border border-amber-300 text-center">
+          <div className="p-2.5 bg-amber-50 rounded-xl border border-amber-300 text-center hover-lift">
             <span className="text-[10px] text-amber-900 font-bold block truncate uppercase">Pending</span>
             <strong className="text-xs font-extrabold font-mono text-amber-950 block mt-0.5">
               ₹{pendingWithdrawal.toFixed(0)}

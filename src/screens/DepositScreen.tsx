@@ -195,7 +195,7 @@ export const DepositScreen: React.FC = () => {
       </div>
 
       {/* SLA & Multi-Chain Notice */}
-      <div className="fintech-card-soft p-3 flex items-center gap-3 border-emerald-200 bg-emerald-50/60">
+      <div className="fintech-card-soft p-3 flex items-center gap-3 border-emerald-200 bg-emerald-50/60 hover-lift animate-fade-in-up">
         <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
           <ShieldCheck className="w-4 h-4" />
         </div>
@@ -206,7 +206,7 @@ export const DepositScreen: React.FC = () => {
       </div>
 
       {/* 1. Network Selector */}
-      <div className="fintech-card p-4 space-y-3">
+      <div className="fintech-card p-4 space-y-3 hover-lift animate-fade-in-up [animation-delay:0.06s]">
         <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
           <span>Select Transfer Blockchain Network</span>
           <span className="text-[10px] text-slate-500">TRC20 & BEP20 supported</span>
@@ -223,7 +223,7 @@ export const DepositScreen: React.FC = () => {
                   triggerSwitchSound();
                   setSelectedVaultId(vault.id);
                 }}
-                className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between spring-press ${
                   isSelected
                     ? 'bg-emerald-50/70 border-emerald-500 text-emerald-950 ring-1 ring-emerald-500 shadow-xs'
                     : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'

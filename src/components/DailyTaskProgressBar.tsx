@@ -119,9 +119,11 @@ export const DailyTaskProgressBar: React.FC<DailyTaskProgressBarProps> = ({
           {/* Fill */}
           <div
             id="daily-progress-bar-fill"
-            className="h-full rounded-full transition-all duration-500 ease-out bg-emerald-600 shadow-xs"
+            className="h-full rounded-full transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-400 shadow-xs relative overflow-hidden"
             style={{ width: `${Math.max(progressPercentage, totalTasks > 0 ? 3 : 0)}%` }}
-          />
+          >
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.4)_50%,transparent_100%)] bg-[length:200%_100%] animate-shimmer" />
+          </div>
         </div>
       </div>
 

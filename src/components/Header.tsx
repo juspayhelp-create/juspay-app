@@ -75,19 +75,24 @@ export const Header: React.FC<{ onOpenNotifications: () => void }> = ({ onOpenNo
         
         {/* Top Mini Trust Bar with Juspay Vault Logo & Live Status */}
         <div className="flex items-center justify-between text-[11px] text-slate-700 font-medium px-0.5 border-b border-slate-200 pb-1.5">
-          <div className="flex items-center gap-1.5 text-emerald-950 font-bold juspay-logo-trigger cursor-pointer select-none active:scale-95 transition-transform" title="Juspay Vault">
-            <JuspayLogo size={20} />
+          <div className="flex items-center gap-1.5 text-emerald-950 font-bold juspay-logo-trigger cursor-pointer select-none active:scale-95 transition-transform group" title="Juspay Vault">
+            <div className="group-hover:rotate-6 transition-transform">
+              <JuspayLogo size={20} />
+            </div>
             <div className="flex items-center gap-1">
               <span className="tracking-tight text-slate-900 font-black">juspay</span>
-              <span className="text-[10px] bg-slate-900 text-emerald-400 px-1.5 py-0.2 rounded font-black tracking-wider uppercase border border-slate-800">
+              <span className="text-[10px] bg-slate-900 text-emerald-400 px-1.5 py-0.2 rounded font-black tracking-wider uppercase border border-slate-800 shadow-2xs">
                 VAULT
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-slate-800">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="flex items-center gap-1.5 text-slate-800 relative">
+            <div className="relative flex items-center justify-center">
+              <span className="absolute w-3.5 h-3.5 rounded-full bg-emerald-400 animate-pulse-ring pointer-events-none" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 relative z-10" />
+            </div>
             <span className="font-mono font-extrabold text-[11px] text-slate-900">1 USDT = ₹{stats.realtime_exchange_rate || 109}</span>
-            <span className="text-[9px] bg-emerald-100/90 text-emerald-950 px-1.5 py-0.5 rounded font-black border border-emerald-300">
+            <span className="text-[9px] bg-emerald-100/90 text-emerald-950 px-1.5 py-0.5 rounded font-black border border-emerald-300 shadow-2xs animate-shimmer-sweep">
               PEG
             </span>
           </div>

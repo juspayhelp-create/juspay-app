@@ -400,9 +400,9 @@ export const ToolWalletScreen: React.FC = () => {
     <div className="space-y-4 pb-24 animate-in fade-in duration-150">
       
       {/* Header Banner */}
-      <div className="fintech-card p-4 flex items-center justify-between">
+      <div className="fintech-card p-4 flex items-center justify-between hover-lift animate-fade-in-up">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-900 flex items-center justify-center font-bold border border-amber-300">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-900 flex items-center justify-center font-bold border border-amber-300 shadow-2xs">
             <Wallet className="w-5 h-5 stroke-[2.2]" />
           </div>
           <div>
@@ -414,7 +414,7 @@ export const ToolWalletScreen: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => triggerWithdrawalCheck(() => setActiveScreen('withdraw'))}
-            className="bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs active:scale-98 transition-all"
+            className="bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs active:scale-98 transition-all spring-press"
           >
             <ArrowUpRight className="w-3.5 h-3.5 text-emerald-400 stroke-[2.5]" />
             <span>Withdraw Funds</span>
@@ -423,7 +423,7 @@ export const ToolWalletScreen: React.FC = () => {
           {!isAdding && (
             <button
               onClick={handleStartAdd}
-              className="fintech-btn-emerald px-3.5 py-1.5 text-xs font-extrabold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs"
+              className="fintech-btn-emerald px-3.5 py-1.5 text-xs font-extrabold rounded-lg flex items-center gap-1 cursor-pointer shadow-xs spring-press"
             >
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Link Tool</span>
