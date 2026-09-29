@@ -12,98 +12,73 @@ export const BottomNavigation: React.FC = () => {
     setActiveScreen(screen);
   };
 
+  const navItems = [
+    { id: 'home', label: 'Home', icon: Home },
+    { id: 'payment', label: 'Cashback', icon: CreditCard },
+    { id: 'tool', label: 'Tools', icon: Wallet, isCenter: true },
+    { id: 'statistics', label: 'Stats', icon: BarChart3 },
+    { id: 'profile', label: 'Profile', icon: User },
+  ];
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 px-3 pb-3 pt-1 pointer-events-none">
       <div className="max-w-md mx-auto pointer-events-auto">
-        <div className="fintech-nav-bar px-2 py-1.5 flex items-center justify-around border border-slate-300 shadow-md">
+        <div className="glass-panel rounded-2xl px-2 py-1.5 flex items-center justify-around border border-slate-200/90 shadow-lg shadow-slate-900/5">
           
-          {/* 1. Home */}
-          <motion.button
-            id="nav-home"
-            whileTap={{ scale: 0.88 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-            onClick={() => handleNav('home')}
-            className={`flex flex-col items-center justify-center w-14 py-1 rounded-xl transition-colors cursor-pointer select-none ${
-              activeScreen === 'home'
-                ? 'text-emerald-800 font-extrabold'
-                : 'text-slate-700 hover:text-slate-950 font-semibold'
-            }`}
-          >
-            <div className={`p-1 rounded-lg transition-all ${activeScreen === 'home' ? 'bg-emerald-100 text-emerald-800 shadow-2xs' : ''}`}>
-              <Home className="w-5 h-5 stroke-[2.2]" />
-            </div>
-            <span className="text-[10px] mt-0.5 tracking-tight">Home</span>
-          </motion.button>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeScreen === item.id;
 
-          {/* 2. Payment / Cashback */}
-          <motion.button
-            id="nav-payment"
-            whileTap={{ scale: 0.88 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-            onClick={() => handleNav('payment')}
-            className={`flex flex-col items-center justify-center w-14 py-1 rounded-xl transition-colors cursor-pointer select-none ${
-              activeScreen === 'payment'
-                ? 'text-emerald-800 font-extrabold'
-                : 'text-slate-700 hover:text-slate-950 font-semibold'
-            }`}
-          >
-            <div className={`p-1 rounded-lg transition-all ${activeScreen === 'payment' ? 'bg-emerald-100 text-emerald-800 shadow-2xs' : ''}`}>
-              <CreditCard className="w-5 h-5 stroke-[2.2]" />
-            </div>
-            <span className="text-[10px] mt-0.5 tracking-tight">Cashback</span>
-          </motion.button>
+            if (item.isCenter) {
+              return (
+                <div key={item.id} className="relative -top-4.5 flex flex-col items-center">
+                  <motion.button
+                    id={`nav-${item.id}`}
+                    whileHover={{ scale: 1.08, y: -2 }}
+                    whileTap={{ scale: 0.90 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                    onClick={() => handleNav(item.id)}
+                    className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-950 via-slate-900 to-slate-800 text-white flex items-center justify-center border-2 border-white shadow-md shadow-slate-900/20 hover:shadow-lg cursor-pointer select-none ring-2 ring-emerald-500/20 group"
+                    aria-label="Tool and Wallet Management"
+                  >
+                    <Icon className="w-5 h-5 text-emerald-400 stroke-[2.2] group-hover:rotate-12 transition-transform" />
+                  </motion.button>
+                  <span className="text-[10px] font-extrabold text-slate-800 mt-0.5 tracking-tight">
+                    {item.label}
+                  </span>
+                </div>
+              );
+            }
 
-          {/* 3. Center Tool / Wallet */}
-          <div className="relative -top-4 flex flex-col items-center">
-            <motion.button
-              id="nav-center-wallet"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.90 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-              onClick={() => handleNav('tool')}
-              className="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center border-2 border-white shadow-md hover:bg-slate-800 cursor-pointer select-none ring-2 ring-emerald-500/20"
-              aria-label="Tool and Wallet Management"
-            >
-              <Wallet className="w-5 h-5 text-emerald-400 stroke-[2.2]" />
-            </motion.button>
-            <span className="text-[10px] font-extrabold text-slate-900 mt-0.5 tracking-tight">Tools</span>
-          </div>
-
-          {/* 4. Statistics */}
-          <motion.button
-            id="nav-statistics"
-            whileTap={{ scale: 0.88 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-            onClick={() => handleNav('statistics')}
-            className={`flex flex-col items-center justify-center w-14 py-1 rounded-xl transition-colors cursor-pointer select-none ${
-              activeScreen === 'statistics'
-                ? 'text-emerald-800 font-extrabold'
-                : 'text-slate-700 hover:text-slate-950 font-semibold'
-            }`}
-          >
-            <div className={`p-1 rounded-lg transition-all ${activeScreen === 'statistics' ? 'bg-emerald-100 text-emerald-800 shadow-2xs' : ''}`}>
-              <BarChart3 className="w-5 h-5 stroke-[2.2]" />
-            </div>
-            <span className="text-[10px] mt-0.5 tracking-tight">Stats</span>
-          </motion.button>
-
-          {/* 5. My Profile */}
-          <motion.button
-            id="nav-profile"
-            whileTap={{ scale: 0.88 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-            onClick={() => handleNav('profile')}
-            className={`flex flex-col items-center justify-center w-14 py-1 rounded-xl transition-colors cursor-pointer select-none ${
-              activeScreen === 'profile'
-                ? 'text-emerald-800 font-extrabold'
-                : 'text-slate-700 hover:text-slate-950 font-semibold'
-            }`}
-          >
-            <div className={`p-1 rounded-lg transition-all ${activeScreen === 'profile' ? 'bg-emerald-100 text-emerald-800 shadow-2xs' : ''}`}>
-              <User className="w-5 h-5 stroke-[2.2]" />
-            </div>
-            <span className="text-[10px] mt-0.5 tracking-tight">Profile</span>
-          </motion.button>
+            return (
+              <motion.button
+                key={item.id}
+                id={`nav-${item.id}`}
+                whileTap={{ scale: 0.88 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                onClick={() => handleNav(item.id)}
+                className={`relative flex flex-col items-center justify-center w-14 py-1 rounded-xl transition-colors cursor-pointer select-none ${
+                  isActive
+                    ? 'text-emerald-800 font-extrabold'
+                    : 'text-slate-500 hover:text-slate-800 font-semibold'
+                }`}
+              >
+                <div className="relative p-1 z-10 flex items-center justify-center">
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTabPill"
+                      className="absolute inset-0 bg-emerald-100/90 rounded-xl shadow-2xs border border-emerald-300/60 -z-10"
+                      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                    />
+                  )}
+                  <Icon className={`w-5 h-5 stroke-[2.2] transition-transform ${isActive ? 'scale-110 text-emerald-700' : ''}`} />
+                </div>
+                <span className="text-[10px] mt-0.5 tracking-tight relative z-10">
+                  {item.label}
+                </span>
+              </motion.button>
+            );
+          })}
 
         </div>
       </div>

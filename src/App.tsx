@@ -263,7 +263,9 @@ const MainAppContent: React.FC = () => {
         <Header onOpenNotifications={() => setIsNotificationOpen(true)} />
         <main className="flex-1 p-3.5 overflow-x-hidden">
           <ScreenBoundary fallbackTitle="Screen Display Variance">
-            {renderScreen()}
+            <div key={activeScreen} className="animate-fade-in-up">
+              {renderScreen()}
+            </div>
           </ScreenBoundary>
           {activeScreen !== 'download' && activeScreen !== 'tools' && <SecurityTrustFooter />}
         </main>

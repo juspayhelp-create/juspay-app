@@ -202,7 +202,7 @@ export const StatisticsScreen: React.FC = () => {
     <div className="space-y-3.5 pb-24 animate-in fade-in duration-150">
       
       {/* 1. Header with real-time date */}
-      <div className="flex items-center justify-between px-0.5">
+      <div className="flex items-center justify-between px-0.5 animate-fade-in-up">
         <div>
           <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
             Statistics ({formattedDate})
@@ -216,10 +216,10 @@ export const StatisticsScreen: React.FC = () => {
       </div>
 
       {/* 2. Account Metrics Grid (4 Cards): Balance, Team Referrals, Deposit, Commission */}
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5 animate-fade-in-up [animation-delay:0.06s]">
         
         {/* Balance Card */}
-        <div className="fintech-card p-3.5">
+        <div className="fintech-card p-3.5 hover-lift">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Balance</span>
             <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-200">
@@ -237,7 +237,7 @@ export const StatisticsScreen: React.FC = () => {
         {/* Team Referrals Card */}
         <div 
           onClick={() => setActiveScreen('team')}
-          className="fintech-card p-3.5 hover:border-blue-300 transition-all cursor-pointer group"
+          className="fintech-card p-3.5 hover:border-blue-300 transition-all cursor-pointer group hover-lift"
         >
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Team Referrals</span>
@@ -269,7 +269,7 @@ export const StatisticsScreen: React.FC = () => {
         </div>
 
         {/* Deposit Card */}
-        <div className="fintech-card p-3.5">
+        <div className="fintech-card p-3.5 hover-lift">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Deposit</span>
             <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-800 flex items-center justify-center border border-purple-200">
@@ -285,7 +285,7 @@ export const StatisticsScreen: React.FC = () => {
         </div>
 
         {/* Commission Card */}
-        <div className="fintech-card p-3.5">
+        <div className="fintech-card p-3.5 hover-lift">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Commission</span>
             <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-800 flex items-center justify-center border border-amber-200">
@@ -303,7 +303,7 @@ export const StatisticsScreen: React.FC = () => {
       </div>
 
       {/* 3. LIVE MARKET OPERATIONS Section */}
-      <div className="space-y-2 pt-1">
+      <div className="space-y-2 pt-1 animate-fade-in-up [animation-delay:0.12s]">
         <div className="flex items-center justify-between px-0.5">
           <h3 className="text-xs font-extrabold text-slate-900 tracking-wider uppercase flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -317,10 +317,10 @@ export const StatisticsScreen: React.FC = () => {
         <div className="grid grid-cols-2 gap-2.5">
           
           {/* TOTAL PLATFORM INCOME */}
-          <div className="fintech-card p-3.5">
+          <div className="fintech-card p-3.5 hover-lift bg-gradient-to-br from-white via-emerald-50/20 to-emerald-50/40 border-emerald-300/80 shadow-xs">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">TOTAL PLATFORM INCOME</span>
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-200">
+              <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center border border-emerald-300 shadow-2xs">
                 <Coins className="w-3.5 h-3.5" />
               </div>
             </div>
@@ -333,7 +333,7 @@ export const StatisticsScreen: React.FC = () => {
           </div>
 
           {/* Completed Cashback Tasks */}
-          <div className="fintech-card p-3.5">
+          <div className="fintech-card p-3.5 hover-lift">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Completed Cashback Tasks</span>
               <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-800 flex items-center justify-center border border-blue-200">
@@ -354,7 +354,7 @@ export const StatisticsScreen: React.FC = () => {
           </div>
 
           {/* Commission Rate */}
-          <div className="fintech-card p-3.5">
+          <div className="fintech-card p-3.5 hover-lift">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Commission Rate</span>
               <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-800 flex items-center justify-center border border-purple-200">
@@ -370,7 +370,7 @@ export const StatisticsScreen: React.FC = () => {
           </div>
 
           {/* Live Dynamic Rates & Tier Yields */}
-          <div className="fintech-card p-3.5">
+          <div className="fintech-card p-3.5 hover-lift">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Live Rates & Tiers</span>
               <div className="w-7 h-7 rounded-lg bg-cyan-50 text-cyan-800 flex items-center justify-center border border-cyan-200">

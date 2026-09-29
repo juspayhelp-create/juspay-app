@@ -219,7 +219,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
       )}
 
       {/* 2. Dark Navy Hero Card ("TOTAL AVAILABLE VAULT") */}
-      <div className="fintech-card-navy p-5 relative overflow-hidden space-y-4">
+      <div className="fintech-card-navy p-5 relative overflow-hidden space-y-4 hover-lift animate-fade-in-up">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0f_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0f_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none opacity-50" />
         <div className="absolute -right-6 -bottom-6 opacity-15 pointer-events-none transform rotate-12 scale-125">
           <JuspayLogo size={140} />
@@ -241,7 +241,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
                 triggerSwitchSound();
                 setIsDetailModalOpen(true);
               }}
-              className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-white flex items-center gap-1.5 border border-slate-700 transition-all cursor-pointer shadow-xs"
+              className="px-2.5 py-1 bg-slate-800/90 hover:bg-slate-700 rounded-lg text-xs font-bold text-white flex items-center gap-1.5 border border-slate-700 transition-all cursor-pointer shadow-xs spring-press"
             >
               <Eye className="w-3.5 h-3.5 text-slate-300" />
               <span>Statement</span>
@@ -261,7 +261,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
             <span className="text-xs text-slate-300 font-mono font-bold">
               ≈ {usdtEquivalent} USDT
             </span>
-            <span className="text-[10px] font-black bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-600">
+            <span className="text-[10px] font-black bg-emerald-950/80 text-emerald-300 px-2 py-0.5 rounded border border-emerald-600/80 shadow-2xs">
               Fixed 1:{stats.realtime_exchange_rate || 109} Peg
             </span>
           </div>
@@ -324,8 +324,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
       </div>
 
       {/* 3. Inflow / Outflow Split Row */}
-      <div className="grid grid-cols-2 gap-2.5">
-        <div className="fintech-card p-3 bg-white border border-slate-200">
+      <div className="grid grid-cols-2 gap-2.5 animate-fade-in-up [animation-delay:0.06s]">
+        <div className="fintech-card p-3 bg-white border border-slate-200 hover-lift">
           <div className="flex items-center justify-between text-[10px] text-slate-500 font-bold uppercase">
             <span>TOTAL INFLOW</span>
             <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-600" />
@@ -338,7 +338,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
           </div>
         </div>
 
-        <div className="fintech-card p-3 bg-white border border-slate-200">
+        <div className="fintech-card p-3 bg-white border border-slate-200 hover-lift">
           <div className="flex items-center justify-between text-[10px] text-slate-500 font-bold uppercase">
             <span>PAID WITHDRAWAL</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-rose-600" />
@@ -353,7 +353,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
       </div>
 
       {/* 4. Quick Service Actions 2x2 Grid */}
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5 animate-fade-in-up [animation-delay:0.12s]">
         
         {/* Action 1: Deposit USDT */}
         <button
@@ -362,7 +362,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
             triggerSwitchSound();
             setActiveScreen('deposit');
           }}
-          className="fintech-card p-3.5 text-left group hover:border-emerald-400 transition-all cursor-pointer shadow-xs bg-white spring-press hover:-translate-y-0.5 hover:shadow-md"
+          className="fintech-card p-3.5 text-left group hover:border-emerald-400 transition-all cursor-pointer shadow-xs bg-white spring-press hover-lift"
         >
           <div className="flex items-center justify-between mb-2">
             <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-200 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
@@ -383,7 +383,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
             triggerSwitchSound();
             triggerWithdrawalCheck(() => setActiveScreen('withdraw'));
           }}
-          className="fintech-card p-3.5 text-left group hover:border-emerald-400 transition-all cursor-pointer shadow-xs bg-white spring-press hover:-translate-y-0.5 hover:shadow-md"
+          className="fintech-card p-3.5 text-left group hover:border-emerald-400 transition-all cursor-pointer shadow-xs bg-white spring-press hover-lift"
         >
           <div className="flex items-center justify-between mb-2">
             <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-800 flex items-center justify-center border border-slate-200 group-hover:bg-slate-900 group-hover:text-white transition-colors">
@@ -404,7 +404,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
             triggerSwitchSound();
             setActiveScreen('task');
           }}
-          className="fintech-card p-3.5 text-left group hover:border-amber-400 transition-all cursor-pointer shadow-xs bg-white spring-press hover:-translate-y-0.5 hover:shadow-md"
+          className="fintech-card p-3.5 text-left group hover:border-amber-400 transition-all cursor-pointer shadow-xs bg-white spring-press hover-lift"
         >
           <div className="flex items-center justify-between mb-2">
             <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-800 flex items-center justify-center border border-amber-200 group-hover:bg-amber-500 group-hover:text-slate-950 transition-colors">
@@ -425,7 +425,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
             triggerSwitchSound();
             setActiveScreen('team');
           }}
-          className="fintech-card p-3.5 text-left group hover:border-blue-400 transition-all cursor-pointer shadow-xs bg-white spring-press hover:-translate-y-0.5 hover:shadow-md"
+          className="fintech-card p-3.5 text-left group hover:border-blue-400 transition-all cursor-pointer shadow-xs bg-white spring-press hover-lift"
         >
           <div className="flex items-center justify-between mb-2">
             <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-800 flex items-center justify-center border border-blue-200 group-hover:bg-blue-600 group-hover:text-white transition-colors">
