@@ -863,16 +863,31 @@ export const DownloadScreen: React.FC<DownloadScreenProps> = ({ onBack, initialT
           </div>
 
           {/* Legal Entity Details Card */}
-          <div className="fintech-card p-4 bg-slate-900 text-slate-200 space-y-3 border border-slate-800">
-            <div className="flex items-center gap-2 text-white font-black text-xs">
-              <Building2 className="w-4 h-4 text-emerald-400" />
-              <span>Registered Corporate Entity</span>
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4.5 space-y-3 text-xs">
+            <div className="flex items-center gap-2 text-emerald-700 font-bold text-sm">
+              <span>🏢</span>
+              <span>Juspay Institutional FinTech Ltd.</span>
             </div>
-            <div className="text-[11px] text-slate-300 space-y-1">
-              <p><strong>Entity:</strong> Juspay Institutional FinTech Ltd.</p>
-              <p><strong>CIN:</strong> U72200KA2012PTC065184 • <strong>CR:</strong> 1010-849201</p>
-              <p><strong>HQ:</strong> St. Marks Road, Central Business District, Bengaluru 560001, India.</p>
-              <p><strong>Regional Hub:</strong> DIFC Gate Precinct 4, Level 5, Dubai, United Arab Emirates.</p>
+
+            <div className="grid grid-cols-1 gap-2 pt-1 border-t border-slate-200/60">
+              <div>
+                <span className="font-semibold text-slate-700">Corporate Identity No. (CIN): </span>
+                <span className="text-slate-600 font-mono">U72200KA2012PTC065184</span>
+              </div>
+
+              <div>
+                <span className="font-semibold text-slate-700">Registered Corporate HQ: </span>
+                <span className="text-slate-600">
+                  Salarpuria Softzone, 3rd Floor, Wing A, Bellandur, Outer Ring Road, Bengaluru, Karnataka 560103, India.
+                </span>
+              </div>
+
+              <div>
+                <span className="font-semibold text-slate-700">Middle East Regional Hub: </span>
+                <span className="text-slate-600">
+                  DIFC Gate Precinct Building 4, Level 5, Office 502, Dubai International Financial Centre, PO Box 507211, Dubai, United Arab Emirates.
+                </span>
+              </div>
             </div>
           </div>
 
