@@ -851,17 +851,6 @@ export const DownloadScreen: React.FC<DownloadScreenProps> = ({ onBack, initialT
             </p>
           </div>
 
-          {/* Section 6: Risk Disclosure & Disclaimer */}
-          <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-2 text-amber-950">
-            <div className="flex items-center gap-2 text-amber-900 font-black text-xs">
-              <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
-              <span>Digital Asset Risk Disclosure</span>
-            </div>
-            <p className="text-[11px] leading-relaxed">
-              Virtual asset operations carry market variance. Payout timelines for fiat settlements depend on banking rails (IMPS / UPI) and network confirmations. By using the platform, users agree to adhere to applicable digital asset and taxation guidelines in their respective jurisdictions.
-            </p>
-          </div>
-
           {/* Legal Entity Details Card */}
           <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4.5 space-y-3 text-xs">
             <div className="flex items-center gap-2 text-emerald-700 font-bold text-sm">
