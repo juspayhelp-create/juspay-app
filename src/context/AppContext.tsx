@@ -1507,13 +1507,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (!saved) return INITIAL_STATS;
       const parsed = JSON.parse(saved);
       if (!parsed || typeof parsed !== 'object') return INITIAL_STATS;
+      let cleanedAnnouncement = parsed.global_announcement || INITIAL_STATS.global_announcement;
+      if (!cleanedAnnouncement || /test\s*notice/i.test(cleanedAnnouncement)) {
+        cleanedAnnouncement = INITIAL_STATS.global_announcement;
+      }
+      let cleanedAnnouncements = (Array.isArray(parsed.global_announcements) && parsed.global_announcements.length > 0)
+        ? parsed.global_announcements.filter((a: any) => a && !/test\s*notice/i.test(a.message || '') && !/test\s*notice/i.test(a.badge || ''))
+        : INITIAL_ANNOUNCEMENTS;
+      if (cleanedAnnouncements.length === 0) cleanedAnnouncements = INITIAL_ANNOUNCEMENTS;
+
       return {
         ...INITIAL_STATS,
         ...parsed,
-        global_announcement: parsed.global_announcement || INITIAL_STATS.global_announcement,
-        global_announcements: (Array.isArray(parsed.global_announcements) && parsed.global_announcements.length > 0)
-          ? parsed.global_announcements
-          : INITIAL_ANNOUNCEMENTS,
+        global_announcement: cleanedAnnouncement,
+        global_announcements: cleanedAnnouncements,
         sla_badge_text: parsed.sla_badge_text || 'SLA NOTICE',
         sla_banner_enabled: parsed.sla_banner_enabled !== undefined ? parsed.sla_banner_enabled : true,
       };

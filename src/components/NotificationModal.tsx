@@ -222,12 +222,20 @@ export const NotificationModal: React.FC<{ isOpen: boolean; onClose: () => void 
         </div>
 
         {/* Global Live SLA Notice Sticky Ticker */}
-        {stats.sla_banner_enabled !== false && stats.global_announcement && (
+        {stats.sla_banner_enabled !== false && (
           <div className="px-3.5 py-2 bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-emerald-200 text-[11px] font-medium flex items-center gap-2 border-b border-emerald-800/40 shrink-0">
             <span className="px-1.5 py-0.2 bg-emerald-500 text-slate-950 font-black text-[9px] rounded uppercase tracking-wider shrink-0">
-              {stats.sla_badge_text || 'LIVE SLA'}
+              {stats.sla_badge_text || activeNotices[0]?.badge || 'SLA NOTICE'}
             </span>
-            <span className="truncate flex-1 font-semibold text-slate-100">{stats.global_announcement}</span>
+            <span className="truncate flex-1 font-semibold text-slate-100">
+              {(() => {
+                const headline = activeNotices.length > 0 ? activeNotices[0].message : stats.global_announcement;
+                if (!headline || /test\s*notice/i.test(headline)) {
+                  return 'Official System Announcement & Settlement Updates';
+                }
+                return headline;
+              })()}
+            </span>
           </div>
         )}
 
