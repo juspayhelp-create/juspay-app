@@ -864,7 +864,7 @@ export const TeamReferralScreen: React.FC = () => {
   };
 
   return (
-    <div className="space-y-3.5 pb-24 animate-in fade-in duration-150">
+    <div className="space-y-3.5 pb-32 animate-in fade-in duration-150">
       
       {/* 1. Overview Banner (Executive Navy Theme) */}
       <div className="fintech-card-navy p-5 space-y-4 relative overflow-hidden">

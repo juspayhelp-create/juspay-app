@@ -179,7 +179,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
   const usdtEquivalent = effectiveRate > 0 ? (liveInrBalance / effectiveRate).toFixed(2) : '0.00';
 
   return (
-    <div className="space-y-4 pb-20 animate-in fade-in duration-150">
+    <div className="space-y-4 pb-32 animate-in fade-in duration-150">
       
       {/* 1. Live Notice / Announcement Bar */}
       {stats.sla_banner_enabled !== false && (() => {

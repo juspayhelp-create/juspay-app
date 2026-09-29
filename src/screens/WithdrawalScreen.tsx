@@ -189,7 +189,7 @@ export const WithdrawalScreen: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 pb-24 animate-in fade-in duration-150">
+    <div className="space-y-4 pb-32 animate-in fade-in duration-150">
       
       {/* Header */}
       <div className="flex items-center gap-3 px-1">

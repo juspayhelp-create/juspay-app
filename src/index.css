@@ -8,31 +8,42 @@
 }
 
 @layer base {
-  html, body {
+  html {
     width: 100%;
+    height: auto;
     min-height: 100%;
-    min-height: -webkit-fill-available;
     overflow-x: hidden;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    touch-action: pan-y;
+  }
+
+  body {
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto !important;
     margin: 0;
     padding: 0;
-    touch-action: manipulation;
+    position: relative;
+    touch-action: pan-y;
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-    overscroll-behavior-y: none;
     color: #1E293B; /* Soft slate-800 for relaxed contrast */
     background-color: #EDF2F7; /* Calm neutral mist slate */
   }
 
   #root {
+    width: 100%;
     min-height: 100vh;
-    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
+    overflow-y: visible;
   }
 
   *, ::before, ::after {
@@ -299,7 +310,7 @@
   }
 
   html, body {
-    touch-action: manipulation;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;

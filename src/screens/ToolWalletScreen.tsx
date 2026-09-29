@@ -397,7 +397,7 @@ export const ToolWalletScreen: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 pb-24 animate-in fade-in duration-150">
+    <div className="space-y-4 pb-32 animate-in fade-in duration-150">
       
       {/* Header Banner */}
       <div className="fintech-card p-4 flex items-center justify-between hover-lift animate-fade-in-up">
