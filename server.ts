@@ -6097,10 +6097,10 @@ app.post(['/api/orders/claim', '/api/claim-order', '/api/cashback/claim'], authe
 
     // 7. Log single corresponding entry in transactions ledger
     const txId = `CLM-${Math.floor(100000 + Math.random() * 900000)}`;
-    const txDesc = `Claimed ${canonicalCode} for +₹${rewardAmount} cashback income`;
+    const txDesc = `Claimed ${canonicalCode} for +₹${rewardAmount} deposit cashback`;
     await dbRun(
       `INSERT INTO transactions (user_id, user_email, type, order_id, tx_id, amount_usdt, amount_inr, amount, description, notes, status, created_at)
-       VALUES (?, ?, 'cashback_reward', ?, ?, ?, ?, ?, ?, ?, 'completed', NOW())`,
+       VALUES (?, ?, 'Deposit Cashback', ?, ?, ?, ?, ?, ?, ?, 'completed', NOW())`,
       [
         userId,
         userRow.email,
@@ -7802,13 +7802,25 @@ async function handleClaimTaskReward(req: any, res: any) {
     // Record in transactions ledger
     const orderId = generateOrderId('RWD');
     const resolvedEmail = rawUser.email || (isNumericId(userId) ? (await dbGet('SELECT email FROM users WHERE id = ?', [Number(userId)]))?.email : (await dbGet('SELECT email FROM users WHERE CAST(id AS TEXT) = ?', [String(userId)]))?.email) || '';
-    const txDesc = `Claimed ₹${rewardInr} (${pointsToCredit} PTS) task reward: ${task.title}`;
+    
+    const isDepositTask = task.action_type === 'deposit' || 
+                          task.task_type === 'deposit' || 
+                          task.task_type === 'claim_cashback' || 
+                          (task.title || '').toLowerCase().includes('deposit') || 
+                          (task.title || '').toLowerCase().includes('cashback') ||
+                          (task.title || '').toLowerCase().includes('cash back');
+    const txType = isDepositTask ? 'Deposit Cashback' : 'task_reward';
+    const txDesc = isDepositTask 
+      ? `Claimed ₹${rewardInr} Deposit Cashback: ${task.title}`
+      : `Claimed ₹${rewardInr} (${pointsToCredit} PTS) task reward: ${task.title}`;
+
     await dbRun(
       `INSERT INTO transactions (user_id, user_email, type, order_id, amount, amount_usdt, amount_inr, description, status, created_at)
-       VALUES (?, ?, 'task_reward', ?, ?, ?, ?, ?, 'successful', CURRENT_TIMESTAMP)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'successful', CURRENT_TIMESTAMP)`,
       [
         effectiveUserId,
         resolvedEmail,
+        txType,
         orderId,
         rewardInr,
         rewardUsdt,

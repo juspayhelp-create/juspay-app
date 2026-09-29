@@ -1291,9 +1291,19 @@ export const mapRawTransaction = (t: any, defaultUserId: string, defaultUserEmai
   }
 
   const rawType = String(t.type || t.type_info || '').toUpperCase();
+  const rawDesc = String(t.description || t.notes || '').toUpperCase();
   let normalizedType: any = 'Withdrawal';
   if (rawType.includes('WITHDRAW')) {
     normalizedType = 'Withdrawal';
+  } else if (
+    rawType.includes('CASHBACK') || 
+    rawType.includes('CLAIM') || 
+    rawDesc.includes('CASHBACK') || 
+    rawDesc.includes('CASH BACK') || 
+    rawDesc.includes('CLAIMED ORD-') || 
+    rawDesc.includes('DEPOSIT CASH')
+  ) {
+    normalizedType = 'Deposit Cashback';
   } else if (rawType.includes('DEP') || rawType.includes('RECHARGE')) {
     normalizedType = 'Deposit';
   } else if (rawType.includes('BONUS')) {
@@ -3709,14 +3719,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       order_id: order.id,
       user_id: currentUser.id,
       user_email: currentUser.email,
-      type: 'cashback_reward',
+      type: 'Deposit Cashback',
       amount: income,
       amount_inr: income,
       currency: 'INR',
       status: 'Completed',
       timestamp: now,
-      description: `Claimed ${order.code} for +₹${income} cashback income`,
-      notes: `Claimed ${order.code} for +₹${income} cashback income`,
+      description: `Claimed ${order.code} for +₹${income} deposit cashback`,
+      notes: `Claimed ${order.code} for +₹${income} deposit cashback`,
     };
     setTransactions(prev => [newTx, ...prev]);
 
@@ -4691,12 +4701,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const realOrderId = data.order_id || data.transaction?.order_id || `RWD-${Date.now()}`;
       const realTxId = data.transaction?.id ? String(data.transaction.id) : realOrderId;
       const now = new Date().toISOString();
+      const isDepositTask = targetTask?.action_type === 'deposit' || 
+                            targetTask?.task_type === 'deposit' || 
+                            targetTask?.task_type === 'claim_cashback' || 
+                            (targetTask?.title || '').toLowerCase().includes('deposit') || 
+                            (targetTask?.title || '').toLowerCase().includes('cashback') ||
+                            (targetTask?.title || '').toLowerCase().includes('cash back');
+      const txTypeLabel = isDepositTask ? 'Deposit Cashback' : 'Task Reward';
+      const defaultDesc = isDepositTask 
+        ? `Claimed ₹${creditedInr} Deposit Cashback: ${taskTitle}`
+        : `Claimed ₹${creditedInr} task reward: ${taskTitle}`;
+
       const taskTx: Transaction = {
         id: realTxId,
         order_id: realOrderId,
         user_id: currentUser.id,
         user_email: currentUser.email,
-        type: 'task_reward',
+        type: txTypeLabel,
         amount: creditedInr,
         amount_inr: creditedInr,
         amount_usdt: Number((creditedInr / (stats.realtime_exchange_rate || 111)).toFixed(4)),
@@ -4704,8 +4725,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         status: 'Completed',
         timestamp: now,
         created_at: now,
-        notes: data.transaction?.description || `Claimed ₹${creditedInr} task reward`,
-        description: data.transaction?.description || `Claimed ₹${creditedInr} task reward`
+        notes: data.transaction?.description || defaultDesc,
+        description: data.transaction?.description || defaultDesc
       };
       setTransactions(prev => mergeTransactionLists([taskTx], prev));
 

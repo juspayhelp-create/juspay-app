@@ -11,7 +11,8 @@ import {
   Clock, 
   CheckCircle2, 
   AlertCircle, 
-  ShieldCheck
+  ShieldCheck,
+  Percent
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { JuspayLogo } from '../components/JuspayLogo';
@@ -100,7 +101,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
 
   const filteredModalTxs = filterType === 'all' 
     ? userTxs 
-    : userTxs.filter(t => t.type.toLowerCase() === filterType.toLowerCase());
+    : userTxs.filter(t => {
+        const typeLower = String(t.type || '').toLowerCase();
+        if (filterType === 'deposit') return typeLower === 'deposit';
+        if (filterType === 'withdrawal') return typeLower.includes('withdraw');
+        if (filterType === 'cashback') return typeLower.includes('cashback') || typeLower.includes('claim');
+        if (filterType === 'commission') return typeLower.includes('commission') || typeLower.includes('referral');
+        if (filterType === 'bonus') return typeLower.includes('bonus');
+        return typeLower === filterType.toLowerCase();
+      });
 
   const handleCopyTx = (txId: string) => {
     triggerConfirmSound();
@@ -479,12 +488,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
                         ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                         : tx.type === 'Withdrawal' || tx.type === 'withdrawal'
                         ? 'bg-rose-50 text-rose-800 border-rose-200'
+                        : String(tx.type).toLowerCase().includes('cashback')
+                        ? 'bg-teal-50 text-teal-800 border-teal-200'
                         : 'bg-amber-50 text-amber-800 border-amber-200'
                     }`}>
                       {tx.type === 'Deposit' || tx.type === 'deposit' ? (
                         <ArrowDownLeft className="w-4 h-4" />
                       ) : tx.type === 'Withdrawal' || tx.type === 'withdrawal' ? (
                         <ArrowUpRight className="w-4 h-4" />
+                      ) : String(tx.type).toLowerCase().includes('cashback') ? (
+                        <Percent className="w-4 h-4 text-teal-700" />
                       ) : (
                         <Gift className="w-4 h-4" />
                       )}
@@ -541,7 +554,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
 
             {/* Filter Tabs */}
             <div className="flex items-center gap-1.5 border-b border-slate-200 pb-2 shrink-0 overflow-x-auto">
-              {['all', 'deposit', 'withdrawal', 'commission', 'bonus'].map((f) => (
+              {['all', 'deposit', 'withdrawal', 'cashback', 'commission', 'bonus'].map((f) => (
                 <button
                   key={f}
                   type="button"
