@@ -21,7 +21,6 @@ import { useApp } from '../context/AppContext';
 import { getISTResetTimestamps, isClaimedInCurrentISTCycle, computeServerAnchoredCountdown } from '../utils/time';
 import { KycVerificationCard } from '../components/KycVerificationCard';
 import { SecurityPinUpdateModal } from '../components/SecurityPinUpdateModal';
-import { ChangeEmailModal } from '../components/ChangeEmailModal';
 import { UserGuideModal } from '../components/UserGuideModal';
 import { 
   triggerHaptic, 
@@ -49,8 +48,8 @@ export const ProfileScreen: React.FC<{ onOpenNotifications?: () => void }> = ({ 
     triggerWithdrawalCheck
   } = useApp();
 
-  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  const [isChangeEmailModalOpen, setIsChangeEmailModalOpen] = useState(false);
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+  const [securityModalTab, setSecurityModalTab] = useState<'pin' | 'email'>('pin');
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [isClaimingCards, setIsClaimingCards] = useState(false);
   const [, setTimerTick] = useState(0);
@@ -182,7 +181,8 @@ export const ProfileScreen: React.FC<{ onOpenNotifications?: () => void }> = ({ 
                 <button
                   onClick={() => {
                     triggerSwitchSound();
-                    setIsChangeEmailModalOpen(true);
+                    setSecurityModalTab('email');
+                    setIsSecurityModalOpen(true);
                   }}
                   title="Update Email Address"
                   className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 rounded text-[10px] font-bold transition-all cursor-pointer"
@@ -430,43 +430,29 @@ export const ProfileScreen: React.FC<{ onOpenNotifications?: () => void }> = ({ 
             <span className="text-[9px] text-slate-500 font-medium mt-0.5">Live Help</span>
           </button>
 
-          {/* 5. Security PIN */}
+          {/* 5. Security (PIN & Email) */}
           <button
             onClick={() => {
               triggerSwitchSound();
-              setIsPinModalOpen(true);
+              setSecurityModalTab('pin');
+              setIsSecurityModalOpen(true);
             }}
             className="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 flex flex-col items-center justify-center text-center group transition-all active:scale-95 cursor-pointer spring-press shadow-2xs"
           >
             <div className="w-9 h-9 rounded-xl bg-white shadow-xs text-teal-700 flex items-center justify-center mb-1.5 border border-slate-200 group-hover:scale-105 transition-transform">
-              <KeyRound className="w-4 h-4" />
+              <ShieldCheck className="w-4 h-4" />
             </div>
-            <span className="text-[11px] font-extrabold text-slate-900">Security PIN</span>
-            <span className="text-[9px] text-slate-500 font-medium mt-0.5">Update PIN</span>
+            <span className="text-[11px] font-extrabold text-slate-900">Security</span>
+            <span className="text-[9px] text-slate-500 font-medium mt-0.5">PIN & Email ID</span>
           </button>
 
-          {/* 6. Change Email */}
-          <button
-            onClick={() => {
-              triggerSwitchSound();
-              setIsChangeEmailModalOpen(true);
-            }}
-            className="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 flex flex-col items-center justify-center text-center group transition-all active:scale-95 cursor-pointer spring-press shadow-2xs"
-          >
-            <div className="w-9 h-9 rounded-xl bg-white shadow-xs text-emerald-700 flex items-center justify-center mb-1.5 border border-slate-200 group-hover:scale-105 transition-transform">
-              <Mail className="w-4 h-4" />
-            </div>
-            <span className="text-[11px] font-extrabold text-slate-900">Change Email</span>
-            <span className="text-[9px] text-slate-500 font-medium mt-0.5">Update Email</span>
-          </button>
-
-          {/* 7. User Guide */}
+          {/* 6. User Guide */}
           <button
             onClick={() => {
               triggerSwitchSound();
               setIsTutorialOpen(true);
             }}
-            className="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 flex flex-col items-center justify-center text-center group transition-all active:scale-95 cursor-pointer spring-press shadow-2xs col-span-3 sm:col-span-1"
+            className="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 flex flex-col items-center justify-center text-center group transition-all active:scale-95 cursor-pointer spring-press shadow-2xs"
           >
             <div className="w-9 h-9 rounded-xl bg-white shadow-xs text-purple-700 flex items-center justify-center mb-1.5 border border-slate-200 group-hover:scale-105 transition-transform">
               <BookOpen className="w-4 h-4" />
@@ -516,17 +502,12 @@ export const ProfileScreen: React.FC<{ onOpenNotifications?: () => void }> = ({ 
         </div>
       </div>
 
-      {/* Security PIN Change Modal with Email OTP Verification */}
+      {/* Account Security Modal: Security PIN & Email ID Management */}
       <SecurityPinUpdateModal 
-        isOpen={isPinModalOpen} 
-        onClose={() => setIsPinModalOpen(false)}
+        isOpen={isSecurityModalOpen} 
+        onClose={() => setIsSecurityModalOpen(false)}
+        initialTab={securityModalTab}
         onUpdatePin={updateSecurityPin}
-      />
-
-      {/* Change Email Address Modal with OTP Verification */}
-      <ChangeEmailModal
-        isOpen={isChangeEmailModalOpen}
-        onClose={() => setIsChangeEmailModalOpen(false)}
       />
 
       {/* Complete Platform & Earning User Guide Walkthrough Modal */}
