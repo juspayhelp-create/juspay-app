@@ -334,7 +334,7 @@ export const AuthScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] py-5 px-4 sm:px-6 flex flex-col justify-between w-full max-w-md mx-auto animate-in fade-in duration-200 box-border">
+    <div className="h-auto min-h-0 py-2 sm:py-4 px-1 sm:px-2 flex flex-col justify-between w-full max-w-md mx-auto animate-in fade-in duration-200 box-border">
       
       {/* Institutional Top Brand Header */}
       <div className="space-y-3.5">

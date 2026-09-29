@@ -138,7 +138,7 @@ export const ProfileScreen: React.FC<{ onOpenNotifications?: () => void }> = ({ 
   };
 
   return (
-    <div className="space-y-4 pb-32 animate-in fade-in duration-150">
+    <div className="space-y-4 animate-in fade-in duration-150">
       
       {/* Profile Info Header Card */}
       <div className="fintech-card p-5 relative overflow-hidden">

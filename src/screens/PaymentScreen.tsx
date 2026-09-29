@@ -83,7 +83,7 @@ export const PaymentScreen: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-3.5 pb-32 animate-in fade-in duration-150">
+    <div className="space-y-3.5 animate-in fade-in duration-150">
       
       {/* 1. Hero Card: Cashback %, Balance, Total Rewards, Pending */}
       <div className="fintech-card p-4 space-y-3 hover-lift animate-fade-in-up">

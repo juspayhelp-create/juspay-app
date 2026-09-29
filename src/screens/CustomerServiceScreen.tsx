@@ -31,7 +31,7 @@ export const CustomerServiceScreen: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 pb-24 animate-in fade-in duration-150">
+    <div className="space-y-4 animate-in fade-in duration-150">
       
       {/* Header */}
       <div className="flex items-center justify-between px-1">

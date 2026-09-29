@@ -199,7 +199,7 @@ export const StatisticsScreen: React.FC = () => {
   const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
 
   return (
-    <div className="space-y-3.5 pb-32 animate-in fade-in duration-150">
+    <div className="space-y-3.5 animate-in fade-in duration-150">
       
       {/* 1. Header with real-time date */}
       <div className="flex items-center justify-between px-0.5 animate-fade-in-up">

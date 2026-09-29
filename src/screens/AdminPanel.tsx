@@ -800,7 +800,7 @@ export const AdminPanel: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 pb-24 animate-in fade-in duration-200">
+    <div className="space-y-4 pb-6 animate-in fade-in duration-200">
       
       {/* Admin Header */}
       <div className="clay-card-gold p-4 flex items-center justify-between text-amber-950">

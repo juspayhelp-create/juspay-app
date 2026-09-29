@@ -154,7 +154,7 @@ export const DownloadScreen: React.FC<DownloadScreenProps> = ({ onBack, initialT
   ];
 
   return (
-    <div className="space-y-4 pb-32 animate-in fade-in duration-150">
+    <div className="space-y-4 animate-in fade-in duration-150">
       
       {/* Top Header Navigation */}
       <div className="flex items-center justify-between pb-1 border-b border-slate-200">

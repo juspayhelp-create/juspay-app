@@ -185,7 +185,7 @@ const MainAppContent: React.FC = () => {
     return (
       <div className="min-h-screen w-full bg-[#EDF2F7] text-slate-800 font-sans antialiased flex flex-col justify-start items-center selection:bg-emerald-500/20 selection:text-emerald-800">
         <div className="w-full max-w-md min-h-screen bg-[#FAFBFD] shadow-[0_10px_35px_rgba(15,23,42,0.06)] relative flex flex-col border-x border-slate-200/80">
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-3.5 pb-28">
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-3.5 pb-6">
             {activeScreen === 'download' || activeScreen === 'about' || activeScreen === 'guidelines' || activeScreen === 'terms' ? (
               <DownloadScreen 
                 initialTab={activeScreen === 'guidelines' || activeScreen === 'terms' ? 'guidelines' : activeScreen === 'about' ? 'about' : 'download'} 
@@ -261,7 +261,7 @@ const MainAppContent: React.FC = () => {
     <div className="min-h-screen min-h-[100dvh] w-full bg-[#EDF2F7] text-slate-800 font-sans antialiased flex flex-col justify-start items-center selection:bg-emerald-500/20 selection:text-emerald-800">
       <div className="w-full max-w-md min-h-screen min-h-[100dvh] bg-[#FAFBFD] shadow-[0_10px_35px_rgba(15,23,42,0.06)] relative flex flex-col border-x border-slate-200/80">
         <Header onOpenNotifications={() => setIsNotificationOpen(true)} />
-        <main className="flex-1 p-3.5 sm:px-4 pb-32 overflow-x-hidden overflow-y-auto w-full max-w-full box-border">
+        <main className="flex-1 p-3.5 sm:px-4 pb-20 overflow-x-hidden overflow-y-auto w-full max-w-full box-border">
           <ScreenBoundary fallbackTitle="Screen Display Variance">
             <div key={activeScreen} className="animate-fade-in-up w-full">
               {renderScreen()}

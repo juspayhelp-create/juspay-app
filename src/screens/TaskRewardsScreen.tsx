@@ -273,7 +273,7 @@ export const TaskRewardsScreen: React.FC = () => {
   const readyToClaimTasks = tasks.filter(t => t.is_active !== false && t.completed && !t.claimed).length;
 
   return (
-    <div className="space-y-4 pb-32 animate-in fade-in duration-200">
+    <div className="space-y-4 animate-in fade-in duration-200">
       
       {/* Task Center Header Banner */}
       <div className="clay-card-gold p-4 space-y-3">
