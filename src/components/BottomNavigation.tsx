@@ -21,9 +21,12 @@ export const BottomNavigation: React.FC = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 px-3 pb-3 pt-1 pointer-events-none">
-      <div className="max-w-md mx-auto pointer-events-auto">
-        <div className="glass-panel rounded-2xl px-2 py-1.5 flex items-center justify-around border border-slate-200/90 shadow-lg shadow-slate-900/5">
+    <nav 
+      className="fixed bottom-0 left-0 right-0 z-50 px-3 pt-1 pointer-events-none"
+      style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom, 0px))' }}
+    >
+      <div className="w-full max-w-md mx-auto pointer-events-auto">
+        <div className="glass-panel rounded-2xl px-2 py-1.5 flex items-center justify-around border border-slate-200/90 shadow-lg shadow-slate-900/5 backdrop-blur-md">
           
           {navItems.map((item) => {
             const Icon = item.icon;

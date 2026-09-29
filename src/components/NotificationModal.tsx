@@ -216,7 +216,11 @@ export const NotificationModal: React.FC<{ isOpen: boolean; onClose: () => void 
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-md h-full bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-250 border-l border-slate-200"
+        className="w-full max-w-md h-full min-h-[100dvh] max-h-[100dvh] bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-250 border-l border-slate-200 box-border"
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+        }}
         onClick={e => e.stopPropagation()}
       >
         

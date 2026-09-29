@@ -126,7 +126,8 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-          className="relative w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col z-10"
+          className="relative w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] max-h-[90dvh] flex flex-col z-10 box-border"
+          style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom, 0px))' }}
         >
           {/* Top Bar / Drag Handle for Mobile */}
           <div className="sm:hidden w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-2.5 mb-1" />

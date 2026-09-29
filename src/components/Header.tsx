@@ -70,7 +70,10 @@ export const Header: React.FC<{ onOpenNotifications: () => void }> = ({ onOpenNo
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white px-4 py-2.5 border-b border-slate-200 shadow-xs">
+    <header 
+      className="sticky top-0 z-30 bg-white px-4 pb-2.5 border-b border-slate-200 shadow-xs"
+      style={{ paddingTop: 'max(10px, env(safe-area-inset-top, 0px))' }}
+    >
       <div className="max-w-md mx-auto space-y-2">
         
         {/* Top Mini Trust Bar with Juspay Vault Logo & Live Status */}
