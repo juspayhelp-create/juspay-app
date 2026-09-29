@@ -4372,8 +4372,7 @@ app.post('/api/user/request-email-change', authenticateToken, async (req: any, r
     return res.json({
       success: true,
       message: 'Verification code sent to your new email address.',
-      newEmail: cleanNewEmail,
-      simulatedCode: otp
+      newEmail: cleanNewEmail
     });
   } catch (err: any) {
     console.error('[EMAIL CHANGE REQUEST ERROR]:', err);

@@ -51,7 +51,6 @@ export const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
   const [otpCountdown, setOtpCountdown] = useState<number>(0);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState<boolean>(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
-  const [simulatedCode, setSimulatedCode] = useState<string | null>(null);
 
   // Reset modal state upon opening
   useEffect(() => {
@@ -66,7 +65,6 @@ export const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
       setOtpCountdown(0);
       setIsVerifyingOtp(false);
       setVerifyError(null);
-      setSimulatedCode(null);
     }
   }, [isOpen]);
 
@@ -144,9 +142,6 @@ export const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
         setCurrentStep('verify');
         setOtpCountdown(60);
         setVerifyError(null);
-        if (data.simulatedCode) {
-          setSimulatedCode(data.simulatedCode);
-        }
         showToast(data.message || `Verification code sent to ${cleanNewEmail}`);
       } else {
         triggerHaptic('error');
@@ -438,16 +433,6 @@ export const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
                   Edit
                 </button>
               </div>
-
-              {/* Dev Simulated Code helper if present */}
-              {simulatedCode && (
-                <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-center">
-                  <span className="text-[11px] text-amber-800 font-medium">
-                    Test OTP Code:{' '}
-                    <strong className="font-mono text-xs font-bold text-amber-900">{simulatedCode}</strong>
-                  </span>
-                </div>
-              )}
 
               {/* Verification Error Notice */}
               {verifyError && (

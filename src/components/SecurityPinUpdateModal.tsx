@@ -74,7 +74,6 @@ export const SecurityPinUpdateModal: React.FC<SecurityModalProps> = ({
   const [emailOtpCode, setEmailOtpCode] = useState<string>('');
   const [isVerifyingEmailOtp, setIsVerifyingEmailOtp] = useState<boolean>(false);
   const [emailVerifyError, setEmailVerifyError] = useState<string | null>(null);
-  const [simulatedEmailCode, setSimulatedEmailCode] = useState<string | null>(null);
 
   // Reset modal state upon opening
   useEffect(() => {
@@ -107,7 +106,6 @@ export const SecurityPinUpdateModal: React.FC<SecurityModalProps> = ({
       setEmailOtpCountdown(0);
       setIsVerifyingEmailOtp(false);
       setEmailVerifyError(null);
-      setSimulatedEmailCode(null);
     }
   }, [isOpen, initialTab]);
 
@@ -351,9 +349,6 @@ export const SecurityPinUpdateModal: React.FC<SecurityModalProps> = ({
         setEmailStep('verify');
         setEmailOtpCountdown(60);
         setEmailVerifyError(null);
-        if (data.simulatedCode) {
-          setSimulatedEmailCode(data.simulatedCode);
-        }
         showToast(data.message || `Verification code sent to ${cleanNewEmail}`);
       } else {
         triggerHaptic('error');
@@ -917,14 +912,6 @@ export const SecurityPinUpdateModal: React.FC<SecurityModalProps> = ({
                     Edit
                   </button>
                 </div>
-
-                {simulatedEmailCode && (
-                  <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg text-center">
-                    <span className="text-[11px] text-amber-800 font-medium">
-                      Test OTP Code: <strong className="font-mono text-xs font-bold text-amber-900">{simulatedEmailCode}</strong>
-                    </span>
-                  </div>
-                )}
 
                 {emailVerifyError && (
                   <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 flex items-start gap-2 text-rose-800 text-xs">
