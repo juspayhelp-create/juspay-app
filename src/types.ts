@@ -38,6 +38,21 @@ export interface User {
   kyc_status?: KycStatus;
   kyc_rejection_reason?: string;
   kyc_verified_at?: string;
+  referralCode?: string;
+  referredBy?: string;
+  upline_code?: string;
+  referrer_id?: string;
+  upline_l2_code?: string;
+  upline_l3_code?: string;
+  referral_link?: string;
+  total_deposit?: number;
+  total_ref_earning?: number;
+  affiliate_commission_total?: number;
+  commission_earned_inr?: number;
+  has_active_withdrawal?: boolean;
+  active_pending_order?: string | null;
+  inr_balance?: number;
+  token?: string;
   created_at: string;
 }
 
@@ -91,6 +106,7 @@ export interface Transaction {
   user_id: string;
   userId?: string;
   user_email?: string;
+  userEmail?: string;
   type: TransactionType | string;
   tier?: 'level_a' | 'level_b' | 'level_c' | string;
   sourceUserId?: string;

@@ -21,6 +21,7 @@ interface OtpVerificationModalProps {
   title?: string;
   description?: string;
   initialApiError?: string;
+  initialDebugOtp?: string;
   onVerified: (code: string) => void | Promise<void>;
   additionalDetails?: {
     amountINR?: number;
