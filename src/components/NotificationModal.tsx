@@ -48,6 +48,20 @@ export const NotificationModal: React.FC<{ isOpen: boolean; onClose: () => void 
 
   const [expandedNoticeId, setExpandedNoticeId] = useState<string | null>(null);
 
+  // Auto-mark notifications and notices as read upon opening
+  useEffect(() => {
+    if (isOpen) {
+      markAllNotificationsAsRead(true);
+      const activeNotices = (stats.global_announcements || []).filter(a => a.is_active);
+      const allNoticeIds = activeNotices.map(n => n.id);
+      const combined = Array.from(new Set([...readNoticeIds, ...allNoticeIds]));
+      setReadNoticeIds(combined);
+      try {
+        localStorage.setItem('juspay_read_notice_ids', JSON.stringify(combined));
+      } catch {}
+    }
+  }, [isOpen]);
+
   // Sync read notices to localStorage
   const markNoticeAsRead = (id: string) => {
     if (!readNoticeIds.includes(id)) {

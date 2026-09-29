@@ -14,7 +14,8 @@ export const Header: React.FC<{ onOpenNotifications: () => void }> = ({ onOpenNo
     setActiveScreen,
     openKycModal,
     unreadNotificationCount,
-    notifications
+    notifications,
+    markAllNotificationsAsRead
   } = useApp();
   const [copied, setCopied] = useState(false);
 
@@ -49,6 +50,7 @@ export const Header: React.FC<{ onOpenNotifications: () => void }> = ({ onOpenNo
 
   const handleOpenNotifs = () => {
     triggerSwitchSound();
+    markAllNotificationsAsRead(true);
     onOpenNotifications();
   };
 

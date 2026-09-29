@@ -934,3 +934,22 @@ CREATE INDEX IF NOT EXISTS idx_kyc_verifications_user_id ON kyc_verifications(us
 CREATE INDEX IF NOT EXISTS idx_kyc_verifications_status ON kyc_verifications(status);
 CREATE INDEX IF NOT EXISTS idx_kyc_verifications_doc_number ON kyc_verifications(document_number);
 
+-- ============================================================================
+-- 10. CANONICAL NOTIFICATIONS TABLE & READ TRACKING COLUMN
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'system',
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT FALSE;
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(user_id, is_read);
+
+

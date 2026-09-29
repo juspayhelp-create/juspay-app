@@ -3369,6 +3369,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
           // Also synchronize claimed cashback orders from dedicated server table
           fetchClaimedCashbackOrders();
+
+          // Also synchronize notifications from server table
+          try {
+            const notifRes = await fetch('/api/notifications', { headers });
+            if (notifRes.ok) {
+              const notifData = await notifRes.json();
+              if (notifData.success && Array.isArray(notifData.notifications) && notifData.notifications.length > 0) {
+                setNotifications(prev => {
+                  const serverNotifs: AppNotification[] = notifData.notifications;
+                  const otherUserNotifs = prev.filter(n => n.user_id !== String(u.id));
+                  return [...serverNotifs, ...otherUserNotifs];
+                });
+              }
+            }
+          } catch {}
         }
       }
     } catch (err) {
@@ -6354,17 +6369,65 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [isAuthenticated, currentUserId]);
 
   // Notifications
-  const markAllNotificationsAsRead = () => {
+  const markAllNotificationsAsRead = async (silent: boolean = false) => {
+    // 1. Optimistically update local notifications state
     setNotifications(prev =>
       prev.map(n => (n.user_id === currentUser.id ? { ...n, is_read: true } : n))
     );
-    showToast('All notifications marked as read.');
+
+    // 2. Mark all SLA notice announcements as read in localStorage
+    try {
+      const activeNotices = (stats.global_announcements || []).filter(a => a.is_active);
+      const allNoticeIds = activeNotices.map(n => n.id);
+      let readNoticeIds: string[] = [];
+      const saved = localStorage.getItem('juspay_read_notice_ids');
+      if (saved) readNoticeIds = JSON.parse(saved);
+      const combined = Array.from(new Set([...readNoticeIds, ...allNoticeIds]));
+      localStorage.setItem('juspay_read_notice_ids', JSON.stringify(combined));
+    } catch {}
+
+    if (!silent) {
+      showToast('All notifications marked as read.');
+    }
+
+    // 3. Call backend API to mark notifications as read in PostgreSQL
+    if (isAuthenticated && currentUser.id !== 'guest') {
+      try {
+        const token = localStorage.getItem('juspay_auth_token') || localStorage.getItem('auth_token');
+        await fetch('/api/notifications/mark-read', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            'x-user-id': String(currentUser.id),
+            'x-user-email': currentUser.email || ''
+          }
+        });
+      } catch (e) {
+        console.warn('Error syncing notifications mark-read to server:', e);
+      }
+    }
   };
 
-  const markNotificationAsRead = (id: string) => {
+  const markNotificationAsRead = async (id: string) => {
     setNotifications(prev =>
       prev.map(n => (n.id === id ? { ...n, is_read: true } : n))
     );
+
+    if (isAuthenticated && currentUser.id !== 'guest') {
+      try {
+        const token = localStorage.getItem('juspay_auth_token') || localStorage.getItem('auth_token');
+        await fetch(`/api/notifications/${id}/read`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            'x-user-id': String(currentUser.id),
+            'x-user-email': currentUser.email || ''
+          }
+        });
+      } catch (e) {}
+    }
   };
 
   const unreadNotificationCount = notifications.filter(

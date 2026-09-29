@@ -1506,6 +1506,23 @@ async function initDatabase() {
       )
     `);
 
+    // Canonical Notifications Table & is_read read tracking column
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        type VARCHAR(50) DEFAULT 'system',
+        is_read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    await dbRun('ALTER TABLE notifications ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT FALSE');
+    await dbRun('CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id)');
+    await dbRun('CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(user_id, is_read)');
+
     // Schema sync for transactions and startup settlement sync
     try {
       await dbRun('ALTER TABLE transactions ADD COLUMN IF NOT EXISTS amount NUMERIC(14, 2)');
@@ -6671,6 +6688,84 @@ function maskReferralCodePrivacy(code?: string): string {
   if (code.length <= 4) return `${code.slice(0, 2)}***`;
   return `${code.slice(0, 3)}***${code.slice(-1)}`;
 }
+
+// ============================================================================
+// NOTIFICATIONS API (PostgreSQL Canonical Storage & Read Status Tracking)
+// ============================================================================
+
+// 1. Fetch user notifications
+app.get(['/api/notifications', '/api/notifications/my'], authenticateToken, async (req: any, res: any) => {
+  try {
+    const userId = req.user.id;
+    const notifications = await dbAll(
+      `SELECT id, user_id, title, message, type, is_read, created_at, updated_at 
+       FROM notifications 
+       WHERE user_id = ? 
+       ORDER BY id DESC 
+       LIMIT 100`,
+      [userId]
+    );
+    return res.json({
+      success: true,
+      notifications: (notifications || []).map((n: any) => ({
+        ...n,
+        id: String(n.id),
+        user_id: String(n.user_id),
+        is_read: Boolean(n.is_read)
+      }))
+    });
+  } catch (err: any) {
+    console.error('[NOTIFICATIONS GET ERROR]:', err);
+    return res.status(500).json({ success: false, error: 'Failed to retrieve notifications.' });
+  }
+});
+
+// 2. Fetch unread notifications count
+app.get('/api/notifications/unread-count', authenticateToken, async (req: any, res: any) => {
+  try {
+    const userId = req.user.id;
+    const row: any = await dbGet(
+      'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = FALSE',
+      [userId]
+    );
+    const count = row && row.count ? Number(row.count) : 0;
+    return res.json({ success: true, count });
+  } catch (err: any) {
+    console.error('[NOTIFICATIONS UNREAD COUNT ERROR]:', err);
+    return res.status(500).json({ success: false, count: 0, error: 'Failed to fetch unread count.' });
+  }
+});
+
+// 3. Mark all notifications as read
+app.all(['/api/notifications/mark-read', '/api/notifications/read-all'], authenticateToken, async (req: any, res: any) => {
+  try {
+    const userId = req.user.id;
+    await dbRun(
+      'UPDATE notifications SET is_read = TRUE, updated_at = NOW() WHERE user_id = ? AND is_read = FALSE',
+      [userId]
+    );
+    return res.json({ success: true, message: 'Notifications marked as read' });
+  } catch (err: any) {
+    console.error('[NOTIFICATIONS MARK READ ERROR]:', err);
+    return res.status(500).json({ success: false, error: 'Failed to mark notifications as read.' });
+  }
+});
+
+// 4. Mark single notification as read
+app.post('/api/notifications/:id/read', authenticateToken, async (req: any, res: any) => {
+  try {
+    const userId = req.user.id;
+    const notifId = req.params.id;
+    await dbRun(
+      'UPDATE notifications SET is_read = TRUE, updated_at = NOW() WHERE id = ? AND user_id = ?',
+      [notifId, userId]
+    );
+    return res.json({ success: true, message: 'Notification marked as read' });
+  } catch (err: any) {
+    console.error('[NOTIFICATION MARK READ SINGLE ERROR]:', err);
+    return res.status(500).json({ success: false, error: 'Failed to mark notification as read.' });
+  }
+});
 
 app.get(['/api/team', '/api/user/team'], authenticateToken, async (req, res) => {
   try {
