@@ -3124,6 +3124,16 @@ async function authenticateToken(req, res, next) {
       return res.status(401).json({ success: false, error: 'User account not found.' });
     }
 
+    // Security Audit Check: Reject banned or suspended user sessions immediately
+    const userStatus = String(user.status || 'Active').toLowerCase();
+    if (userStatus === 'banned' || userStatus === 'suspended' || userStatus === 'blocked') {
+      return res.status(403).json({ 
+        success: false, 
+        error: 'Your account has been suspended or restricted. Please contact institutional compliance support.',
+        isBanned: true 
+      });
+    }
+
     const currentIp = getClientIp(req);
     if (user.ip_address !== currentIp) {
       try {
@@ -3985,9 +3995,8 @@ app.post('/api/auth/forgot-pin/verify', async (req, res) => {
 
     const now = Date.now();
     const isValid = record && Number(record.expires_at) > now;
-    const isMock = otp === '123456' || otp === '889900';
 
-    if (!isValid && !isMock) {
+    if (!isValid) {
       return res.status(400).json({ error: 'Invalid or expired OTP code.' });
     }
 
@@ -4172,10 +4181,6 @@ app.post(['/api/user/security-pin/verify-otp', '/api/user/security-pin/verify'],
         isMatched = true;
         await dbRun('UPDATE otps SET used = 1 WHERE id = ?', [otpRecord.id]);
       }
-    }
-
-    if (!isMatched && (inputOtp === '123456' || inputOtp === '889900')) {
-      isMatched = true;
     }
 
     if (!isMatched) {
@@ -4440,12 +4445,9 @@ app.post('/api/user/verify-email-change', authenticateToken, async (req: any, re
     const now = Date.now();
     const isExpired = otpExpiry > 0 && now > otpExpiry;
 
-    const isMasterDevCode = inputOtp === '123456' || inputOtp === '889900';
     let isOtpValid = false;
 
     if (storedOtp && storedOtp === inputOtp && !isExpired) {
-      isOtpValid = true;
-    } else if (isMasterDevCode) {
       isOtpValid = true;
     } else {
       // Check in otps audit table as fallback
@@ -4679,7 +4681,7 @@ app.post('/api/track-device', async (req, res) => {
 });
 
 // Admin: Get Device Clusters & Alerts
-app.get('/api/admin/device-clusters', async (req, res) => {
+app.get('/api/admin/device-clusters', authenticateAdmin, async (req, res) => {
   try {
     res.json({
       success: true,
@@ -4693,7 +4695,7 @@ app.get('/api/admin/device-clusters', async (req, res) => {
 });
 
 // Admin: Execute Action on Device Cluster
-app.post('/api/admin/device-clusters/action', async (req, res) => {
+app.post('/api/admin/device-clusters/action', authenticateAdmin, async (req, res) => {
   try {
     const { clusterId, action, targetUserId, reason, note, adminUser } = req.body;
     const cluster = deviceClustersStore.find(c => c.id === clusterId);
@@ -5320,24 +5322,20 @@ app.post('/api/auth/recover-pin', async (req, res) => {
       return res.status(400).json({ error: 'New PIN must be exactly 6 numeric digits.' });
     }
 
-    const isMasterCode = (cleanOtp === '123456' || cleanOtp === '889900');
-    let otpRecord = null;
-    if (!isMasterCode) {
-      otpRecord = await dbGet(
-        'SELECT * FROM otps WHERE email = ? AND code = ? AND used = 0 ORDER BY id DESC LIMIT 1',
-        [cleanEmail, cleanOtp]
-      );
+    const otpRecord = await dbGet(
+      'SELECT * FROM otps WHERE email = ? AND code = ? AND used = 0 ORDER BY id DESC LIMIT 1',
+      [cleanEmail, cleanOtp]
+    );
 
-      if (!otpRecord) {
-        return res.status(400).json({ error: 'Invalid or expired OTP verification code.' });
-      }
-
-      if (Date.now() > otpRecord.expires_at) {
-        return res.status(400).json({ error: 'OTP code has expired. Please request a new one.' });
-      }
-
-      await dbRun('UPDATE otps SET used = 1 WHERE id = ?', [otpRecord.id]);
+    if (!otpRecord) {
+      return res.status(400).json({ error: 'Invalid or expired OTP verification code.' });
     }
+
+    if (Date.now() > otpRecord.expires_at) {
+      return res.status(400).json({ error: 'OTP code has expired. Please request a new one.' });
+    }
+
+    await dbRun('UPDATE otps SET used = 1 WHERE id = ?', [otpRecord.id]);
 
     const user = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER(?)', [cleanEmail]);
     if (!user) {
@@ -6489,10 +6487,9 @@ async function handleWithdrawalSubmit(req: any, res: any) {
       otpValid = true;
       await dbRun('UPDATE otps SET used = 1 WHERE id = ?', [otpRecord.id]);
     } else {
-      // Fallback check: security PIN
-      const dbUser = await dbGet('SELECT security_pin, pin FROM users WHERE id = ?', [req.user.id]);
-      const validPin = (dbUser?.security_pin || dbUser?.pin || '123456').toString().trim();
-      if (validPin === String(authCode).trim()) {
+      // Fallback check: security PIN (strictly validates user's configured PIN)
+      const pinResult = await verifyUserPin(req.user.id, String(authCode).trim());
+      if (pinResult.valid) {
         otpValid = true;
       }
     }
@@ -9492,8 +9489,8 @@ app.post(['/api/admin/users/:id/reconcile', '/api/admin/users/reconcile/:id'], a
   }
 });
 
-// Admin & Dev: Reset All Test & Demo Accounts
-app.post(['/api/admin/reset-accounts', '/api/dev/reset-accounts'], async (req, res) => {
+// Admin & Dev: Reset All Test & Demo Accounts (Strict Admin Authorization Required)
+app.post(['/api/admin/reset-accounts', '/api/dev/reset-accounts'], authenticateAdmin, async (req, res) => {
   try {
     await dbRun('DELETE FROM affiliate_commissions');
     await dbRun('DELETE FROM otps');
