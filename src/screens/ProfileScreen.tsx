@@ -383,7 +383,7 @@ export const ProfileScreen: React.FC<{ onOpenNotifications?: () => void }> = ({ 
             <span className="text-[9px] text-slate-500 font-medium mt-0.5">UPI & Bank</span>
           </button>
 
-          {/* 2. Integral / Rewards */}
+          {/* 2. Task Rewards */}
           <button
             onClick={() => {
               triggerSwitchSound();
@@ -394,7 +394,7 @@ export const ProfileScreen: React.FC<{ onOpenNotifications?: () => void }> = ({ 
             <div className="w-9 h-9 rounded-xl bg-white shadow-xs text-amber-700 flex items-center justify-center mb-1.5 border border-slate-200 group-hover:scale-105 transition-transform">
               <Coins className="w-4 h-4" />
             </div>
-            <span className="text-[11px] font-extrabold text-slate-900">Integral Hub</span>
+            <span className="text-[11px] font-extrabold text-slate-900">Task Rewards</span>
             <span className="text-[9px] text-slate-500 font-medium mt-0.5">Daily Rewards</span>
           </button>
 
