@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix juspay 1",
+  "description": "Mobile-first Fintech \u0026 Multi-Level Reward Platform with crypto/INR deposits, automated 2-tier affiliate rewards, task earnings, and admin approvals.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

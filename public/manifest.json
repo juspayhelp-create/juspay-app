@@ -1,0 +1,25 @@
+{
+  "name": "Juspay",
+  "short_name": "Juspay",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0f1d",
+  "theme_color": "#059669",
+  "description": "Juspay Secure Verification & Task Platform",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

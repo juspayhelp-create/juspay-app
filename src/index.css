@@ -1,0 +1,400 @@
+@import "tailwindcss";
+
+@layer base {
+  html, body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    color: #1E293B; /* Soft slate-800 for relaxed contrast */
+    background-color: #EDF2F7; /* Calm neutral mist slate */
+  }
+
+  *, ::before, ::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #E2E8F0; /* Soft slate-200 border */
+  }
+}
+
+@layer utilities {
+  /* =========================================================
+     REFINED, LOW-CONTRAST INSTITUTIONAL FINTECH DESIGN SYSTEM
+     Balanced, eye-comfortable surfaces with soft-slate palette
+     ========================================================= */
+
+  /* 1. Primary White Banking Card - Soft 1px border & clean depth */
+  .clay-card,
+  .fintech-card {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03);
+    color: #1E293B;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .clay-card:hover,
+  .fintech-card:hover {
+    border-color: #CBD5E1;
+    box-shadow: 0 2px 6px 0 rgba(15, 23, 42, 0.05);
+  }
+
+  /* 2. Soft Tinted Card */
+  .clay-card-soft,
+  .fintech-card-soft {
+    background-color: #F8FAFC;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    box-shadow: none;
+    color: #334155;
+  }
+
+  /* 3. Executive Slate-Navy Vault Card (Refined Low-Contrast Gradient) */
+  .clay-card-emerald,
+  .fintech-card-navy {
+    background: linear-gradient(145deg, #1E293B 0%, #172436 100%);
+    border-radius: 14px;
+    color: #F8FAFC;
+    border: 1px solid #334155;
+    box-shadow: 0 4px 14px 0 rgba(15, 23, 42, 0.08);
+    position: relative;
+  }
+
+  /* 4. Gold / Amber Accent Card - Softened Warmth */
+  .clay-card-gold,
+  .fintech-card-amber {
+    background-color: #FEFDF9;
+    border-radius: 12px;
+    color: #92400E;
+    border: 1px solid #FDE68A;
+    box-shadow: 0 1px 2px 0 rgba(217, 119, 6, 0.03);
+  }
+
+  /* 5. Soft Emerald Trust Card - Calm Sage Mint */
+  .clay-card-emerald-soft,
+  .fintech-card-emerald {
+    background-color: #F4FBF7;
+    border-radius: 12px;
+    border: 1px solid #A7F3D0;
+    color: #065F46;
+    box-shadow: 0 1px 2px 0 rgba(16, 185, 129, 0.03);
+  }
+
+  /* 6. Soft Violet Card */
+  .clay-card-purple,
+  .fintech-card-purple {
+    background-color: #FAF8FD;
+    border-radius: 12px;
+    border: 1px solid #E9D5FF;
+    color: #6B21A8;
+    box-shadow: 0 1px 2px 0 rgba(147, 51, 234, 0.03);
+  }
+
+  /* 7. Refined Low-Contrast Login Theme Utilities */
+  .login-emerald-card {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+    border-radius: 18px;
+    color: #1E293B;
+  }
+
+  .login-emerald-input {
+    background-color: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    color: #1E293B;
+    transition: all 0.2s ease;
+  }
+
+  .login-emerald-input:focus {
+    border-color: #0D9488;
+    box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
+    outline: none;
+  }
+
+  .login-gold-badge {
+    background: #FEF3C7;
+    color: #92400E;
+    border: 1px solid #FDE68A;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  }
+
+  .login-emerald-btn {
+    background: linear-gradient(135deg, #0F766E 0%, #0D9488 100%);
+    color: #FFFFFF;
+    border: 1px solid #0F766E;
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.2);
+    transition: all 0.15s ease;
+  }
+
+  .login-emerald-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #115E59 0%, #0F766E 100%);
+    box-shadow: 0 3px 12px rgba(13, 148, 136, 0.25);
+    transform: translateY(-1px);
+  }
+
+  /* =========================================================
+     PRECISION FINTECH ACTION BUTTONS (INTEGER 1PX EDGES)
+     ========================================================= */
+
+  .clay-btn,
+  .fintech-btn {
+    border-radius: 8px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    border: 1px solid transparent;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .clay-btn:active,
+  .fintech-btn:active {
+    transform: scale(0.98);
+  }
+
+  /* Emerald Trust Button - Calibrated Teal-Emerald */
+  .clay-btn-emerald,
+  .fintech-btn-emerald {
+    background-color: #0F766E;
+    color: #FFFFFF;
+    border: 1px solid #0D6D66;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  }
+
+  .clay-btn-emerald:hover,
+  .fintech-btn-emerald:hover {
+    background-color: #0D6D66;
+  }
+
+  /* Gold / Amber Action Button */
+  .clay-btn-gold,
+  .fintech-btn-amber {
+    background-color: #D97706;
+    color: #FFFFFF;
+    border: 1px solid #B45309;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  }
+
+  .clay-btn-gold:hover,
+  .fintech-btn-amber:hover {
+    background-color: #B45309;
+  }
+
+  /* Dark Executive Button (Slate-700/800 Solid) */
+  .fintech-btn-dark {
+    background-color: #273444;
+    color: #FFFFFF;
+    border: 1px solid #1E293B;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .fintech-btn-dark:hover {
+    background-color: #1E293B;
+  }
+
+  /* =========================================================
+     INSETS, INPUTS & ICON CONTAINERS (CRISP INTEGER 1PX)
+     ========================================================= */
+
+  .clay-inset,
+  .clay-well,
+  .fintech-inset {
+    background-color: #F8FAFC;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    color: #1E293B;
+  }
+
+  .fintech-inset:focus-within {
+    border-color: #0D9488;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
+  }
+
+  .clay-inset-emerald,
+  .fintech-inset-emerald {
+    background-color: #F4FBF7;
+    border-radius: 8px;
+    border: 1px solid #A7F3D0;
+    color: #065F46;
+  }
+
+  .clay-icon-box,
+  .fintech-icon-box {
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+  }
+
+  .clay-badge,
+  .fintech-badge {
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    border: 1px solid transparent;
+  }
+
+  /* Bottom Navigation Bar - Crisp 1px Soft Border */
+  .clay-nav-bar,
+  .fintech-nav-bar {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 16px 0 rgba(15, 23, 42, 0.06);
+  }
+
+  /* Marquee animation for live announcements */
+  @keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+  .animate-marquee {
+    display: inline-block;
+    white-space: nowrap;
+    animation: marquee 28s linear infinite;
+  }
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
+
+  /* Keypad shake animation on incorrect PIN entry */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+  .animate-shake {
+    animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
+  /* Micro-animations & UI transitions */
+  @keyframes pulseSubtle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.88; transform: scale(1.02); }
+  }
+  .animate-pulse-subtle {
+    animation: pulseSubtle 3s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .animate-shimmer {
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s infinite;
+  }
+
+  @keyframes floatSlow {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-4px); }
+  }
+  .animate-float-slow {
+    animation: floatSlow 4s ease-in-out infinite;
+  }
+
+  /* Universal spring press effect */
+  .spring-press {
+    transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.12s ease;
+  }
+  .spring-press:active {
+    transform: scale(0.96);
+  }
+
+  /* Cheer Modal Spring Pop Animation */
+  @keyframes cheerPop {
+    0% {
+      opacity: 0;
+      transform: scale(0.6) translateY(30px);
+    }
+    55% {
+      opacity: 1;
+      transform: scale(1.06) translateY(-6px);
+    }
+    75% {
+      transform: scale(0.97) translateY(2px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  .animate-cheer-pop {
+    animation: cheerPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  /* Cheer Sparkle / Aura Rotation */
+  @keyframes cheerSpinAura {
+    0% {
+      transform: rotate(0deg) scale(1);
+    }
+    50% {
+      transform: rotate(180deg) scale(1.1);
+    }
+    100% {
+      transform: rotate(360deg) scale(1);
+    }
+  }
+  .animate-cheer-aura {
+    animation: cheerSpinAura 10s linear infinite;
+  }
+
+  /* Cheering Icon Bounce */
+  @keyframes cheerBounce {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-8px) scale(1.06);
+    }
+  }
+  .animate-cheer-bounce {
+    animation: cheerBounce 1.8s ease-in-out infinite;
+  }
+
+  /* Glow Pulse for Celebrations */
+  @keyframes glowEmerald {
+    0%, 100% {
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.55);
+    }
+  }
+  .animate-glow-emerald {
+    animation: glowEmerald 2.5s ease-in-out infinite;
+  }
+
+  @keyframes glowGold {
+    0%, 100% {
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(245, 158, 11, 0.55);
+    }
+  }
+  .animate-glow-gold {
+    animation: glowGold 2.5s ease-in-out infinite;
+  }
+
+  /* Progress countdown shrink */
+  @keyframes shrinkWidth {
+    from {
+      width: 100%;
+    }
+    to {
+      width: 0%;
+    }
+  }
+
+  /* Scrollbar suppression */
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
