@@ -174,7 +174,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
       
       {/* 1. Live Notice / Announcement Bar */}
       {stats.sla_banner_enabled !== false && (() => {
-        const activeAnnouncements = (stats.global_announcements || []).filter(a => a.is_active);
+        const activeAnnouncements = (stats.global_announcements || []).filter(
+          a => a.is_active && !/test\s*notice/i.test(a.message || '') && !/test\s*notice/i.test(a.badge || '')
+        );
         const marqueeText = activeAnnouncements.length > 0
           ? activeAnnouncements.map(a => `${a.badge ? `[${a.badge}] ` : ''}${a.message}`).join('   •••   ')
           : (stats.global_announcement || 'Official Settlement Gateway: Guaranteed Fixed 1 USDT = 109 INR • 24/7 Fast Payouts & Automated Settlements.');

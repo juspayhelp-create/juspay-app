@@ -25,14 +25,18 @@ export const Header: React.FC<{ onOpenNotifications: () => void }> = ({ onOpenNo
   const isKycPending = rawKycStatus === 'PENDING' || rawKycStatus === 'SUBMITTED' || rawKycStatus === 'UNDER_REVIEW';
 
   // Calculate active unread items (notifications + active SLA notices)
-  const activeAnnouncements = (stats.global_announcements || []).filter(a => a.is_active);
+  const activeAnnouncements = (stats.global_announcements || []).filter(
+    a => a.is_active && !/test\s*notice/i.test(a.message || '') && !/test\s*notice/i.test(a.badge || '')
+  );
   let readNoticeIds: string[] = [];
   try {
     const saved = localStorage.getItem('juspay_read_notice_ids');
     if (saved) readNoticeIds = JSON.parse(saved);
   } catch {}
   const unreadNoticeCount = activeAnnouncements.filter(a => !readNoticeIds.includes(a.id)).length;
-  const userUnreadNotifs = notifications.filter(n => n.user_id === currentUser.id && !n.is_read).length;
+  const userUnreadNotifs = notifications.filter(
+    n => n.user_id === currentUser.id && !n.is_read && !/test\s*notice/i.test(n.title || '') && !/test\s*notice/i.test(n.message || '')
+  ).length;
   const totalUnreadCount = (unreadNotificationCount !== undefined ? unreadNotificationCount : userUnreadNotifs) + unreadNoticeCount;
 
   const copyUserId = () => {

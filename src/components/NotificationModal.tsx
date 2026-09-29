@@ -87,8 +87,12 @@ export const NotificationModal: React.FC<{ isOpen: boolean; onClose: () => void 
 
   if (!isOpen) return null;
 
-  const activeNotices: SLAAnnouncement[] = (stats.global_announcements || []).filter(a => a.is_active);
-  const userNotifs = notifications.filter(n => n.user_id === currentUser.id);
+  const activeNotices: SLAAnnouncement[] = (stats.global_announcements || []).filter(
+    a => a.is_active && !/test\s*notice/i.test(a.message || '') && !/test\s*notice/i.test(a.badge || '')
+  );
+  const userNotifs = notifications.filter(
+    n => n.user_id === currentUser.id && !/test\s*notice/i.test(n.title || '') && !/test\s*notice/i.test(n.message || '')
+  );
 
   // Convert active notices to unified list item format for 'All' tab
   const noticeListItems = activeNotices.map(notice => ({

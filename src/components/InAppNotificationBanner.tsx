@@ -39,7 +39,12 @@ export const InAppNotificationBanner: React.FC<InAppNotificationBannerProps> = (
     if (!latestNotif) return;
 
     // Check if notification was created recently and is for current user
-    if (latestNotif.user_id === currentUser.id && !latestNotif.is_read) {
+    if (
+      latestNotif.user_id === currentUser.id && 
+      !latestNotif.is_read && 
+      !/test\s*notice/i.test(latestNotif.title || '') && 
+      !/test\s*notice/i.test(latestNotif.message || '')
+    ) {
       const notifTime = new Date(latestNotif.created_at).getTime();
       if (!isNaN(notifTime) && notifTime > lastProcessedTimestamp - 10000) {
         triggerHaptic(latestNotif.type === 'Deposit' || latestNotif.type === 'Commission' ? 'success' : 'medium');
@@ -59,7 +64,13 @@ export const InAppNotificationBanner: React.FC<InAppNotificationBannerProps> = (
   useEffect(() => {
     const handleBroadcast = (e: any) => {
       const detail = e.detail;
-      if (detail && detail.message) {
+      if (
+        detail && 
+        detail.message && 
+        !/test\s*notice/i.test(detail.title || '') && 
+        !/test\s*notice/i.test(detail.message || '') && 
+        !/test\s*notice/i.test(detail.badge || '')
+      ) {
         triggerHaptic(detail.priority === 'urgent' ? 'warning' : 'medium');
         setCurrentAlert({
           id: `broadcast_${Date.now()}`,
