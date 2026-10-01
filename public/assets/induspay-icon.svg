@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <filter id="indus-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Deep Maroon / IndusInd Burgundy Squircle Background -->
+  <rect x="6" y="6" width="188" height="188" rx="46" fill="#881d28" />
+
+  <!-- Dual Swirling Transaction Arrows Graphic -->
+  <g transform="translate(0, -6)">
+    <!-- Gold / Yellow Arrow pointing up-left -->
+    <path
+      d="M 68,54 C 84,54 104,66 114,80 C 104,74 90,70 76,73 L 83,86 L 68,108 L 74,88 C 66,86 54,80 54,68 C 54,58 60,54 68,54 Z"
+      fill="#f5a623"
+    />
+    <path
+      d="M 70,54 C 88,54 116,70 126,94 C 114,84 96,78 78,80 L 84,94 L 66,110 L 72,88 C 64,88 54,82 54,68 C 54,58 62,54 70,54 Z"
+      fill="#fbb03b"
+      filter="url(#indus-shadow)"
+    />
+    
+    <!-- White Arrow pointing down-right -->
+    <path
+      d="M 130,94 C 112,94 84,78 74,54 C 86,64 104,70 122,68 L 116,54 L 134,38 L 128,60 C 136,60 146,66 146,80 C 146,90 138,94 130,94 Z"
+      fill="#ffffff"
+      filter="url(#indus-shadow)"
+    />
+  </g>
+
+  <!-- BHIM INDUSPAY Text Logotype -->
+  <!-- "BHIM" with green chevron -->
+  <g transform="translate(100, 144)" text-anchor="middle">
+    <text
+      x="-6"
+      y="0"
+      fill="#ffffff"
+      font-family="system-ui, -apple-system, 'Inter', 'Segoe UI', sans-serif"
+      font-weight="900"
+      font-style="italic"
+      font-size="19"
+      letter-spacing="0.5"
+    >BHIM</text>
+    <!-- Green BHIM triangle chevron -->
+    <polygon points="22,-15 31,-9 22,-3" fill="#00a859" />
+    <polygon points="24,-13 31,-9 24,-5" fill="#f47920" />
+  </g>
+
+  <!-- "INDUS" in white + "PAY" in gold -->
+  <g transform="translate(100, 168)" text-anchor="middle" font-family="system-ui, -apple-system, 'Inter', 'Segoe UI', sans-serif" font-weight="900" font-size="21" letter-spacing="0.8">
+    <text x="-18" y="0" fill="#ffffff">INDUS</text>
+    <text x="32" y="0" fill="#fbb03b">PAY</text>
+  </g>
+</svg>
